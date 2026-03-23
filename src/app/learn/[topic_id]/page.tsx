@@ -291,7 +291,9 @@ function AplicacionesTab({ explanation }: { explanation: TopicExplanation }) {
                 <Badge color="purple">{app.field}</Badge>
               </div>
               <h4 className="text-lg font-bold text-white mb-2">{app.title}</h4>
-              <p className="text-gray-400 mb-3">{app.description}</p>
+              <div className="text-gray-400 mb-3 leading-relaxed">
+                <MathRender content={app.description} />
+              </div>
               {app.example_latex && (
                 <div className="bg-gray-900/50 rounded-lg p-3 border border-gray-800">
                   <span className="text-xs text-neon-cyan block mb-1">Ejemplo concreto:</span>

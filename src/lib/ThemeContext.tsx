@@ -2,7 +2,9 @@
 
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
 
-export type ThemeId = "cyberpunk" | "solarpunk" | "neobrutal" | "bauhaus" | "midnight" | "retrowave";
+export type ThemeId =
+  | "cyberpunk" | "solarpunk" | "neobrutal" | "bauhaus" | "midnight" | "retrowave"
+  | "dark-academia" | "nordic" | "obsidian" | "forest" | "ink" | "ember";
 
 export interface ThemeInfo {
   id: ThemeId;
@@ -47,6 +49,43 @@ export const themes: ThemeInfo[] = [
     name: "Retrowave",
     description: "Sintetizadores, puestas de sol y nostalgia de los 80s",
     preview: { bg: "#1a0828", accent: "#ff6ec7", accent2: "#7b2dff", text: "#ffe4f1" },
+  },
+  // ── Calm / Sober ──
+  {
+    id: "dark-academia",
+    name: "Dark Academia",
+    description: "Bibliotecas antiguas, sepia y conocimiento en penumbra",
+    preview: { bg: "#1c1814", accent: "#c9a96e", accent2: "#8b6f47", text: "#e8dcc8" },
+  },
+  {
+    id: "nordic",
+    name: "Nordic",
+    description: "Minimalismo escandinavo, grises fríos y calma invernal",
+    preview: { bg: "#1a1e24", accent: "#88b4c8", accent2: "#7e9aaf", text: "#d8dee8" },
+  },
+  {
+    id: "obsidian",
+    name: "Obsidian",
+    description: "Negro absoluto con acentos plateados, puro y silencioso",
+    preview: { bg: "#0d0d0d", accent: "#a0a0a0", accent2: "#787878", text: "#e0e0e0" },
+  },
+  {
+    id: "forest",
+    name: "Forest",
+    description: "Verdes apagados y tierra húmeda, como un bosque de noche",
+    preview: { bg: "#141a14", accent: "#6b8f6b", accent2: "#7a6e5a", text: "#c8d4c0" },
+  },
+  {
+    id: "ink",
+    name: "Ink",
+    description: "Azul marino profundo y tiza blanca, como un cuaderno antiguo",
+    preview: { bg: "#101828", accent: "#94a8c8", accent2: "#7888a8", text: "#d0d8e8" },
+  },
+  {
+    id: "ember",
+    name: "Ember",
+    description: "Carbón y brasas, terracota suave sobre oscuridad cálida",
+    preview: { bg: "#181210", accent: "#c08050", accent2: "#8a6040", text: "#e0d0c0" },
   },
 ];
 

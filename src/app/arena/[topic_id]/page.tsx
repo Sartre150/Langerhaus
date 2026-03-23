@@ -17,6 +17,8 @@ import {
   Radical,
   Divide,
   Superscript,
+  RefreshCw,
+  Shuffle,
 } from "lucide-react";
 import MathRender from "@/components/MathRender";
 import { NeonButton, Card, ProgressBar, Badge } from "@/components/ui";
@@ -25,6 +27,7 @@ import {
   getProblemsForTopic,
   checkAnswer,
 } from "@/lib/store";
+import { generateProblemSet, hasGenerator } from "@/lib/problemGenerator";
 import { useProgress } from "@/lib/ProgressContext";
 import { Problem, Topic } from "@/lib/types";
 
@@ -49,15 +52,39 @@ export default function ArenaPage() {
   const [score, setScore] = useState(0);
   const [shake, setShake] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [isRandomMode, setIsRandomMode] = useState(false);
+
+  const loadProblems = useCallback((random: boolean) => {
+    if (random && hasGenerator(topicId)) {
+      setProblems(generateProblemSet(topicId, 8));
+      setIsRandomMode(true);
+    } else {
+      setProblems(getProblemsForTopic(topicId));
+      setIsRandomMode(false);
+    }
+    setCurrentIndex(0);
+    setAnswer("");
+    setState("solving");
+    setHintsUsed(0);
+    setAttempts(0);
+    setShowHint1(false);
+    setShowHint2(false);
+    setShowSolution(false);
+  }, [topicId]);
 
   useEffect(() => {
     setMounted(true);
     const t = getTopicById(topicId);
-    const p = getProblemsForTopic(topicId);
     setTopic(t || null);
-    setProblems(p);
     const progress = getTopicProgress(topicId);
     setScore(progress.score);
+    // Default: use random if generator available, else seed problems
+    if (hasGenerator(topicId)) {
+      setProblems(generateProblemSet(topicId, 8));
+      setIsRandomMode(true);
+    } else {
+      setProblems(getProblemsForTopic(topicId));
+    }
   }, [topicId, getTopicProgress]);
 
   const currentProblem = problems[currentIndex];
@@ -92,11 +119,13 @@ export default function ArenaPage() {
       setShowHint1(false);
       setShowHint2(false);
       setShowSolution(false);
+    } else if (isRandomMode) {
+      // Generate a fresh batch
+      loadProblems(true);
     } else {
-      // Completed all problems
       router.push("/dashboard");
     }
-  }, [currentIndex, problems.length, router]);
+  }, [currentIndex, problems.length, router, isRandomMode, loadProblems]);
 
   const handleSurrender = useCallback(() => {
     setState("surrendered");
@@ -158,6 +187,11 @@ export default function ArenaPage() {
               <span>Dashboard</span>
             </button>
             <div className="flex items-center gap-2">
+              {isRandomMode && (
+                <Badge color="green">
+                  <Shuffle size={12} className="inline mr-1" />Random
+                </Badge>
+              )}
               <Badge color="purple">
                 {currentIndex + 1} / {problems.length}
               </Badge>
@@ -228,7 +262,11 @@ export default function ArenaPage() {
                       Has ganado puntos de maestría.
                     </p>
                     <NeonButton variant="green" icon={ChevronRight} onClick={nextProblem}>
-                      {currentIndex < problems.length - 1 ? "Siguiente Problema" : "Finalizar"}
+                      {currentIndex < problems.length - 1
+                        ? "Siguiente Problema"
+                        : isRandomMode
+                          ? "Generar Nuevos"
+                          : "Finalizar"}
                     </NeonButton>
                   </Card>
                 </motion.div>
@@ -262,7 +300,11 @@ export default function ArenaPage() {
                     </div>
                     <div className="mt-4 flex justify-center">
                       <NeonButton variant="purple" icon={ChevronRight} onClick={nextProblem}>
-                        {currentIndex < problems.length - 1 ? "Siguiente Problema" : "Finalizar"}
+                        {currentIndex < problems.length - 1
+                          ? "Siguiente Problema"
+                          : isRandomMode
+                            ? "Generar Nuevos"
+                            : "Finalizar"}
                       </NeonButton>
                     </div>
                   </Card>
@@ -396,7 +438,7 @@ export default function ArenaPage() {
 
             {/* Action buttons */}
             {state === "solving" && (
-              <div className="flex justify-between">
+              <div className="flex justify-between items-center">
                 <NeonButton
                   variant="danger"
                   size="sm"
@@ -405,14 +447,26 @@ export default function ArenaPage() {
                 >
                   Rendirse (Ver Solución)
                 </NeonButton>
-                <NeonButton
-                  variant="ghost"
-                  size="sm"
-                  icon={SkipForward}
-                  onClick={nextProblem}
-                >
-                  Saltar
-                </NeonButton>
+                <div className="flex gap-2">
+                  {hasGenerator(topicId) && (
+                    <NeonButton
+                      variant="ghost"
+                      size="sm"
+                      icon={RefreshCw}
+                      onClick={() => loadProblems(true)}
+                    >
+                      Regenerar
+                    </NeonButton>
+                  )}
+                  <NeonButton
+                    variant="ghost"
+                    size="sm"
+                    icon={SkipForward}
+                    onClick={nextProblem}
+                  >
+                    Saltar
+                  </NeonButton>
+                </div>
               </div>
             )}
           </motion.div>

@@ -1,11 +1,15 @@
 -- ═══════════════════════════════════════════════════════
--- MathCore Forge - Supabase Database Schema
+-- Langerhaus - Supabase Database Schema
 -- Run this SQL in your Supabase SQL Editor
 -- ═══════════════════════════════════════════════════════
 -- NOTE: Topics and problems are stored as local seed data
 -- in the app. Only user progress is persisted in Supabase.
 -- topic_id is a TEXT field matching seed IDs like "t-0-1".
 -- ═══════════════════════════════════════════════════════
+
+-- ─── IF YOU ALREADY HAVE THE TABLE WITH WRONG TYPES, RUN THIS FIRST: ───
+-- DROP TABLE IF EXISTS user_progress;
+-- DROP TYPE IF EXISTS progress_status;
 
 -- ─── USER PROGRESS TABLE ───
 CREATE TYPE progress_status AS ENUM ('locked', 'unlocked', 'mastered');
