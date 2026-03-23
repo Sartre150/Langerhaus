@@ -1,4 +1,4 @@
-import { Problem } from "./types";
+import { Problem, CalculatorPolicy } from "./types";
 
 // ══════════════════════════════════════════════════════════════════
 // GENERADOR DE PROBLEMAS ALEATORIOS
@@ -1233,6 +1233,76 @@ const generators: Record<string, Gen> = {
   "t-10-4": genAppliedLinAlg,
 };
 
+// ══════════════════════════════════════════════════════════════════
+// POLÍTICA DE CALCULADORA POR TEMA Y DIFICULTAD
+// "mental"     = Solo cálculo mental (fortalece aritmética básica)
+// "optional"   = Puedes usar calculadora pero intenta mentalmente  
+// "calculator" = Calculadora recomendada (enfócate en el concepto)
+// ══════════════════════════════════════════════════════════════════
+
+const calculatorPolicies: Record<string, (d: number) => CalculatorPolicy> = {
+  // Level 0: Aritmética — mental para fortalecer base
+  "t-0-1": (d) => d <= 3 ? "mental" : "optional",
+  "t-0-2": (d) => d <= 2 ? "mental" : "optional",
+  "t-0-3": (d) => d <= 2 ? "mental" : "optional",
+  "t-0-4": (d) => d <= 2 ? "mental" : "optional",
+  "t-0-5": () => "mental", // PEMDAS siempre mental
+  "t-0-6": (d) => d <= 2 ? "mental" : "optional",
+  // Level 1: Pre-álgebra — más mental
+  "t-1-1": (d) => d <= 3 ? "mental" : "optional",
+  "t-1-2": (d) => d <= 2 ? "mental" : "optional",
+  "t-1-3": (d) => d <= 3 ? "mental" : "optional",
+  "t-1-4": (d) => d <= 3 ? "mental" : "optional",
+  "t-1-5": (d) => d <= 2 ? "mental" : "optional",
+  // Level 2: Álgebra I — enfoque en procedimiento
+  "t-2-1": () => "mental",
+  "t-2-2": () => "mental",
+  "t-2-3": () => "mental",
+  "t-2-4": (d) => d <= 3 ? "optional" : "calculator",
+  "t-2-5": (d) => d <= 2 ? "optional" : "calculator",
+  "t-2-6": (d) => d <= 2 ? "optional" : "calculator",
+  "t-2-7": () => "optional",
+  // Level 3: Álgebra II
+  "t-3-1": () => "optional",
+  "t-3-2": (d) => d <= 2 ? "optional" : "calculator",
+  "t-3-3": (d) => d <= 2 ? "optional" : "calculator",
+  "t-3-4": (d) => d <= 2 ? "optional" : "calculator",
+  "t-3-6": (d) => d <= 3 ? "optional" : "calculator",
+  // Level 4: Trigonometría
+  "t-4-1": (d) => d <= 2 ? "optional" : "calculator",
+  "t-4-2": () => "optional",
+  "t-4-3": () => "calculator",
+  "t-4-5": () => "calculator",
+  // Level 5+: Cálculo y superior — calculadora recomendada
+  "t-5-1": (d) => d <= 2 ? "optional" : "calculator",
+  "t-5-2": () => "optional",
+  "t-5-3": (d) => d <= 2 ? "optional" : "calculator",
+  "t-5-4": () => "calculator",
+  "t-5-5": () => "calculator",
+  "t-6-1": (d) => d <= 2 ? "optional" : "calculator",
+  "t-6-2": () => "calculator",
+  "t-6-3": () => "calculator",
+  "t-6-4": () => "calculator",
+  "t-6-5": () => "calculator",
+  "t-7-1": () => "calculator",
+  "t-7-2": () => "calculator",
+  "t-7-3": () => "calculator",
+  "t-8-1": (d) => d <= 2 ? "optional" : "calculator",
+  "t-8-2": () => "calculator",
+  "t-8-6": () => "calculator",
+  "t-9-1": () => "calculator",
+  "t-9-2": () => "calculator",
+  "t-10-1": (d) => d <= 2 ? "optional" : "calculator",
+  "t-10-2": () => "calculator",
+  "t-10-3": () => "calculator",
+  "t-10-4": () => "calculator",
+};
+
+export function getCalculatorPolicy(topicId: string, difficulty: number): CalculatorPolicy {
+  const fn = calculatorPolicies[topicId];
+  return fn ? fn(difficulty) : "optional";
+}
+
 // ── Helper to build a Problem object ──
 function prob(
   topicId: string,
@@ -1252,6 +1322,7 @@ function prob(
     hint_1_latex: hint1,
     hint_2_latex: hint2,
     step_by_step_solution_latex: solution,
+    calculator_policy: getCalculatorPolicy(topicId, difficulty),
   };
 }
 
@@ -1274,17 +1345,24 @@ export function generateOne(topicId: string, difficulty: number): Problem | null
 /**
  * Generate a balanced set of random problems for a topic.
  * Default: 8 problems with escalating difficulty.
+ * If fixedDifficulty is provided (1-5), all problems will have that difficulty.
  */
-export function generateProblemSet(topicId: string, count = 8): Problem[] {
+export function generateProblemSet(topicId: string, count = 8, fixedDifficulty?: number): Problem[] {
   const gen = generators[topicId];
   if (!gen) return [];
 
   const problems: Problem[] = [];
-  // Distribute difficulties: 2×d1, 2×d2, 2×d3, 1×d4, 1×d5
-  const diffs =
-    count <= 5
-      ? Array.from({ length: count }, (_, i) => i + 1)
-      : [1, 1, 2, 2, 3, 3, 4, 5, ...Array.from({ length: Math.max(0, count - 8) }, () => ri(2, 4))];
+
+  let diffs: number[];
+  if (fixedDifficulty && fixedDifficulty >= 1 && fixedDifficulty <= 5) {
+    diffs = Array.from({ length: count }, () => fixedDifficulty);
+  } else {
+    // Distribute difficulties: 2×d1, 2×d2, 2×d3, 1×d4, 1×d5
+    diffs =
+      count <= 5
+        ? Array.from({ length: count }, (_, i) => i + 1)
+        : [1, 1, 2, 2, 3, 3, 4, 5, ...Array.from({ length: Math.max(0, count - 8) }, () => ri(2, 4))];
+  }
 
   for (const d of diffs.slice(0, count)) {
     // Retry a few times to avoid degenerate cases
@@ -1302,4 +1380,33 @@ export function generateProblemSet(topicId: string, count = 8): Problem[] {
   }
 
   return problems;
+}
+
+/**
+ * Generate problems for multiple topics (used by custom practice config).
+ * Distributes problems evenly across selected topics.
+ */
+export function generateCustomProblemSet(
+  topicIds: string[],
+  count = 8,
+  fixedDifficulty?: number
+): Problem[] {
+  const validTopics = topicIds.filter((id) => id in generators);
+  if (validTopics.length === 0) return [];
+
+  const perTopic = Math.max(1, Math.ceil(count / validTopics.length));
+  const allProblems: Problem[] = [];
+
+  for (const tid of validTopics) {
+    const batch = generateProblemSet(tid, perTopic, fixedDifficulty);
+    allProblems.push(...batch);
+  }
+
+  // Shuffle and trim to requested count
+  for (let i = allProblems.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [allProblems[i], allProblems[j]] = [allProblems[j], allProblems[i]];
+  }
+
+  return allProblems.slice(0, count);
 }

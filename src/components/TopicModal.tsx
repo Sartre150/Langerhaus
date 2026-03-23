@@ -1,10 +1,11 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Swords, Trophy, X, BookOpen } from "lucide-react";
+import { Swords, Trophy, X, BookOpen, BarChart3 } from "lucide-react";
 import { TopicWithProgress } from "@/lib/types";
 import { NeonButton, ProgressBar, Badge } from "./ui";
 import { Modal } from "./ui";
+import { useProgress } from "@/lib/ProgressContext";
 
 interface TopicModalProps {
   topic: TopicWithProgress | null;
@@ -14,6 +15,7 @@ interface TopicModalProps {
 
 export default function TopicModal({ topic, isOpen, onClose }: TopicModalProps) {
   const router = useRouter();
+  const { getExerciseStats } = useProgress();
 
   if (!topic) return null;
 
@@ -21,6 +23,16 @@ export default function TopicModal({ topic, isOpen, onClose }: TopicModalProps) 
   const problemCount = topic.children.length > 0
     ? `${topic.children.length} subtemas`
     : "Problemas disponibles";
+
+  // Collect exercise stats for children or the topic itself
+  const statsTopics = topic.children.length > 0 ? topic.children : [topic];
+  const totalStats = statsTopics.reduce(
+    (acc, t) => {
+      const s = getExerciseStats(t.id);
+      return { attempted: acc.attempted + s.attempted, correct: acc.correct + s.correct };
+    },
+    { attempted: 0, correct: 0 }
+  );
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -61,6 +73,51 @@ export default function TopicModal({ topic, isOpen, onClose }: TopicModalProps) 
             Nivel de Maestría: <span className="text-text-primary font-mono">{topic.score}/100</span>
           </p>
         </div>
+
+        {/* Exercise Stats */}
+        {totalStats.attempted > 0 && (
+          <div className="mb-6 p-3 rounded-lg bg-bg-secondary/50 border border-text-muted/10">
+            <div className="flex items-center gap-2 mb-3">
+              <BarChart3 size={14} className="text-neon-cyan" />
+              <span className="text-xs font-semibold text-text-primary uppercase tracking-wider">Ejercicios Resueltos</span>
+            </div>
+            <div className="grid grid-cols-3 gap-3 text-center mb-3">
+              <div>
+                <p className="text-lg font-bold text-text-primary font-mono">{totalStats.attempted}</p>
+                <p className="text-xs text-text-muted">Intentados</p>
+              </div>
+              <div>
+                <p className="text-lg font-bold text-neon-green font-mono">{totalStats.correct}</p>
+                <p className="text-xs text-text-muted">Correctos</p>
+              </div>
+              <div>
+                <p className="text-lg font-bold text-neon-cyan font-mono">
+                  {Math.round((totalStats.correct / totalStats.attempted) * 100)}%
+                </p>
+                <p className="text-xs text-text-muted">Precisión</p>
+              </div>
+            </div>
+            {/* Per-subtopic breakdown */}
+            {topic.children.length > 0 && (
+              <div className="space-y-1.5 pt-2 border-t border-text-muted/10">
+                {topic.children.map((child) => {
+                  const cs = getExerciseStats(child.id);
+                  if (cs.attempted === 0) return null;
+                  const pct = Math.round((cs.correct / cs.attempted) * 100);
+                  return (
+                    <div key={child.id} className="flex items-center gap-2 text-xs">
+                      <span className="text-text-secondary flex-1 truncate">{child.title}</span>
+                      <span className="text-text-muted font-mono">{cs.correct}/{cs.attempted}</span>
+                      <span className={`font-mono w-8 text-right ${pct >= 70 ? "text-neon-green" : "text-text-muted"}`}>
+                        {pct}%
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Subtopics preview */}
         {topic.children.length > 0 && (
@@ -111,8 +168,8 @@ export default function TopicModal({ topic, isOpen, onClose }: TopicModalProps) 
             icon={Swords}
             onClick={() => {
               onClose();
-              const targetId = topic.children.find((c) => c.status === "unlocked")?.id || topic.id;
-              router.push(`/arena/${targetId}`);
+              // Navigate to arena with the parent topic (config page will show subtopics)
+              router.push(`/arena/${topic.id}`);
             }}
             className="flex-1"
           >

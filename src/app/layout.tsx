@@ -4,6 +4,7 @@ import "./globals.css";
 import { AuthProvider } from "@/lib/AuthContext";
 import { ProgressProvider } from "@/lib/ProgressContext";
 import { ThemeProvider } from "@/lib/ThemeContext";
+import { StudyProvider } from "@/lib/StudyContext";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -41,7 +42,9 @@ export default function RootLayout({
       >
         <ThemeProvider>
           <AuthProvider>
-            <ProgressProvider>{children}</ProgressProvider>
+            <ProgressProvider>
+              <StudyProvider>{children}</StudyProvider>
+            </ProgressProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>

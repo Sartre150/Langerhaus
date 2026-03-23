@@ -1,5 +1,6 @@
 import { seedTopics, seedProblems } from "./seedData";
 import { Topic, Problem } from "./types";
+import { getCalculatorPolicy } from "./problemGenerator";
 
 // ── Pure data lookups (no user state) ──
 
@@ -11,8 +12,18 @@ export function getTopicById(id: string): Topic | undefined {
   return seedTopics.find((t) => t.id === id);
 }
 
+/** Returns subtopics of a given parent topic */
+export function getSubtopics(parentId: string): Topic[] {
+  return seedTopics.filter((t) => t.parent_topic_id === parentId);
+}
+
 export function getProblemsForTopic(topicId: string): Problem[] {
-  return seedProblems.filter((p) => p.topic_id === topicId);
+  return seedProblems
+    .filter((p) => p.topic_id === topicId)
+    .map((p) => ({
+      ...p,
+      calculator_policy: p.calculator_policy || getCalculatorPolicy(p.topic_id, p.difficulty),
+    }));
 }
 
 // ── Answer checking utilities ──

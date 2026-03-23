@@ -9,6 +9,8 @@ export interface Topic {
   is_locked_by_default: boolean;
 }
 
+export type CalculatorPolicy = "mental" | "calculator" | "optional";
+
 export interface Problem {
   id: string;
   topic_id: string;
@@ -18,6 +20,53 @@ export interface Problem {
   hint_1_latex: string;
   hint_2_latex: string;
   step_by_step_solution_latex: string;
+  calculator_policy?: CalculatorPolicy;
+}
+
+export interface ExerciseStats {
+  attempted: number;
+  correct: number;
+}
+
+// ── Spaced Repetition (SM-2 inspired) ──
+
+export interface ReviewCard {
+  topicId: string;
+  /** Next review date (ISO string) */
+  nextReview: string;
+  /** Interval in days until next review */
+  interval: number;
+  /** Ease factor (≥1.3, default 2.5) */
+  easeFactor: number;
+  /** Number of consecutive correct reviews */
+  repetitions: number;
+  /** Last review date (ISO string) */
+  lastReview: string;
+}
+
+// ── Daily Activity & Streak ──
+
+export interface DailyActivity {
+  /** ISO date string YYYY-MM-DD */
+  date: string;
+  problemsSolved: number;
+  problemsCorrect: number;
+  timeSpentMinutes: number;
+  topicsPracticed: string[];
+}
+
+export interface StreakData {
+  currentStreak: number;
+  longestStreak: number;
+  lastActiveDate: string; // YYYY-MM-DD
+  dailyGoal: number;      // problems per day
+  todayProgress: number;   // problems solved today
+}
+
+export interface PracticeConfig {
+  selectedTopics: string[];
+  difficulty: number;       // 1-5, 0 = mixed
+  problemCount: number;
 }
 
 export interface UserProgress {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -19,6 +19,12 @@ import {
   Superscript,
   RefreshCw,
   Shuffle,
+  Settings,
+  Brain,
+  Calculator,
+  Zap,
+  BarChart3,
+  Play,
 } from "lucide-react";
 import MathRender from "@/components/MathRender";
 import { NeonButton, Card, ProgressBar, Badge } from "@/components/ui";
@@ -26,20 +32,41 @@ import {
   getTopicById,
   getProblemsForTopic,
   checkAnswer,
+  getSubtopics,
 } from "@/lib/store";
-import { generateProblemSet, hasGenerator } from "@/lib/problemGenerator";
+import { generateProblemSet, generateCustomProblemSet, hasGenerator } from "@/lib/problemGenerator";
 import { useProgress } from "@/lib/ProgressContext";
-import { Problem, Topic } from "@/lib/types";
+import { useStudy } from "@/lib/StudyContext";
+import { Problem, Topic, CalculatorPolicy } from "@/lib/types";
 
 type ArenaState = "solving" | "correct" | "wrong" | "surrendered";
+type PageMode = "config" | "practice";
+
+// ── Calculator policy display helpers ──
+const CALC_POLICY_META: Record<CalculatorPolicy, { icon: typeof Brain; label: string; color: string; description: string }> = {
+  mental: { icon: Brain, label: "Cálculo Mental", color: "text-neon-green", description: "Resuelve sin calculadora — fortalece tu base" },
+  optional: { icon: Zap, label: "Opcional", color: "text-yellow-400", description: "Intenta mentalmente, usa calculadora si necesitas" },
+  calculator: { icon: Calculator, label: "Calculadora", color: "text-neon-cyan", description: "Usa calculadora — enfócate en el concepto" },
+};
 
 export default function ArenaPage() {
   const params = useParams();
   const router = useRouter();
   const topicId = params.topic_id as string;
-  const { getTopicProgress, addScore } = useProgress();
+  const { getTopicProgress, addScore, getExerciseStats, recordExercise } = useProgress();
+  const { recordDailyProblem, recordReview, initReviewCard } = useStudy();
 
+  // ── Page mode: config (select topics/difficulty) vs practice ──
+  const [pageMode, setPageMode] = useState<PageMode>("config");
+
+  // ── Config state ──
   const [topic, setTopic] = useState<Topic | null>(null);
+  const [subtopics, setSubtopics] = useState<Topic[]>([]);
+  const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
+  const [difficulty, setDifficulty] = useState(0); // 0 = mixed
+  const [problemCount, setProblemCount] = useState(8);
+
+  // ── Practice state ──
   const [problems, setProblems] = useState<Problem[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answer, setAnswer] = useState("");
@@ -52,16 +79,55 @@ export default function ArenaPage() {
   const [score, setScore] = useState(0);
   const [shake, setShake] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [isRandomMode, setIsRandomMode] = useState(false);
+  const [sessionStats, setSessionStats] = useState({ attempted: 0, correct: 0 });
 
-  const loadProblems = useCallback((random: boolean) => {
-    if (random && hasGenerator(topicId)) {
-      setProblems(generateProblemSet(topicId, 8));
-      setIsRandomMode(true);
-    } else {
-      setProblems(getProblemsForTopic(topicId));
-      setIsRandomMode(false);
+  // ── Initialize topic and subtopics ──
+  useEffect(() => {
+    setMounted(true);
+    const t = getTopicById(topicId);
+    setTopic(t || null);
+    const progress = getTopicProgress(topicId);
+    setScore(progress.score);
+
+    // Get subtopics that have generators
+    const subs = getSubtopics(topicId).filter((s) => hasGenerator(s.id));
+    setSubtopics(subs);
+
+    // If the topic itself has a generator (it's a subtopic), pre-select it
+    if (hasGenerator(topicId) && subs.length === 0) {
+      setSelectedTopics([topicId]);
+    } else if (subs.length > 0) {
+      // Pre-select all subtopics
+      setSelectedTopics(subs.map((s) => s.id));
     }
+  }, [topicId, getTopicProgress]);
+
+  // ── Available topics to select from ──
+  const selectableTopics = useMemo(() => {
+    if (subtopics.length > 0) return subtopics;
+    if (hasGenerator(topicId) && topic) return [topic];
+    return [];
+  }, [subtopics, topicId, topic]);
+
+  // ── Start practice with current config ──
+  const startPractice = useCallback(() => {
+    if (selectedTopics.length === 0) return;
+
+    let generated: Problem[];
+    const diff = difficulty >= 1 && difficulty <= 5 ? difficulty : undefined;
+
+    if (selectedTopics.length === 1) {
+      generated = generateProblemSet(selectedTopics[0], problemCount, diff);
+    } else {
+      generated = generateCustomProblemSet(selectedTopics, problemCount, diff);
+    }
+
+    // Fallback to seed problems if no generator
+    if (generated.length === 0) {
+      generated = getProblemsForTopic(topicId);
+    }
+
+    setProblems(generated);
     setCurrentIndex(0);
     setAnswer("");
     setState("solving");
@@ -70,25 +136,29 @@ export default function ArenaPage() {
     setShowHint1(false);
     setShowHint2(false);
     setShowSolution(false);
-  }, [topicId]);
-
-  useEffect(() => {
-    setMounted(true);
-    const t = getTopicById(topicId);
-    setTopic(t || null);
-    const progress = getTopicProgress(topicId);
-    setScore(progress.score);
-    // Default: use random if generator available, else seed problems
-    if (hasGenerator(topicId)) {
-      setProblems(generateProblemSet(topicId, 8));
-      setIsRandomMode(true);
-    } else {
-      setProblems(getProblemsForTopic(topicId));
-    }
-  }, [topicId, getTopicProgress]);
+    setSessionStats({ attempted: 0, correct: 0 });
+    selectedTopics.forEach((t) => initReviewCard(t));
+    setPageMode("practice");
+  }, [selectedTopics, difficulty, problemCount, topicId, initReviewCard]);
 
   const currentProblem = problems[currentIndex];
 
+  // ── Toggle topic selection ──
+  const toggleTopic = useCallback((tid: string) => {
+    setSelectedTopics((prev) =>
+      prev.includes(tid) ? prev.filter((id) => id !== tid) : [...prev, tid]
+    );
+  }, []);
+
+  const selectAll = useCallback(() => {
+    setSelectedTopics(selectableTopics.map((t) => t.id));
+  }, [selectableTopics]);
+
+  const deselectAll = useCallback(() => {
+    setSelectedTopics([]);
+  }, []);
+
+  // ── Submit answer ──
   const handleSubmit = useCallback(() => {
     if (!currentProblem || !answer.trim()) return;
 
@@ -97,18 +167,22 @@ export default function ArenaPage() {
     if (isCorrect) {
       setState("correct");
       const points = Math.max(20 - hintsUsed * 5 - (attempts * 3), 5);
-      addScore(topicId, points);
+      addScore(currentProblem.topic_id, points);
       setScore((prev) => Math.min(prev + points, 100));
+      recordExercise(currentProblem.topic_id, true);
+      recordDailyProblem(currentProblem.topic_id, true);
+      recordReview(currentProblem.topic_id, attempts === 0 ? 5 : 3);
+      setSessionStats((prev) => ({ attempted: prev.attempted + 1, correct: prev.correct + 1 }));
     } else {
       setAttempts((prev) => prev + 1);
       setState("wrong");
       setShake(true);
       setTimeout(() => setShake(false), 500);
-      // After a brief moment, go back to solving
       setTimeout(() => setState("solving"), 1500);
     }
-  }, [answer, currentProblem, hintsUsed, attempts, topicId, addScore]);
+  }, [answer, currentProblem, hintsUsed, attempts, addScore, recordExercise, recordDailyProblem, recordReview]);
 
+  // ── Next problem ──
   const nextProblem = useCallback(() => {
     if (currentIndex < problems.length - 1) {
       setCurrentIndex((prev) => prev + 1);
@@ -119,18 +193,21 @@ export default function ArenaPage() {
       setShowHint1(false);
       setShowHint2(false);
       setShowSolution(false);
-    } else if (isRandomMode) {
-      // Generate a fresh batch
-      loadProblems(true);
     } else {
-      router.push("/dashboard");
+      // Finished batch — re-generate with same config
+      startPractice();
     }
-  }, [currentIndex, problems.length, router, isRandomMode, loadProblems]);
+  }, [currentIndex, problems.length, startPractice]);
 
   const handleSurrender = useCallback(() => {
     setState("surrendered");
     setShowSolution(true);
-  }, []);
+    const pid = currentProblem?.topic_id || topicId;
+    recordExercise(pid, false);
+    recordDailyProblem(pid, false);
+    recordReview(pid, 1);
+    setSessionStats((prev) => ({ ...prev, attempted: prev.attempted + 1 }));
+  }, [currentProblem, topicId, recordExercise, recordDailyProblem, recordReview]);
 
   const insertSymbol = useCallback((symbol: string) => {
     setAnswer((prev) => prev + symbol);
@@ -154,6 +231,217 @@ export default function ArenaPage() {
     );
   }
 
+  // ════════════════════════════════════════════════════════════════
+  // CONFIG MODE — Select topics, difficulty, problem count
+  // ════════════════════════════════════════════════════════════════
+  if (pageMode === "config") {
+    return (
+      <div className="min-h-screen bg-bg-primary bg-grid">
+        <header className="sticky top-0 z-40 bg-bg-primary/80 backdrop-blur-md border-b border-text-muted/10">
+          <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
+            <button
+              onClick={() => router.push("/dashboard")}
+              className="flex items-center gap-2 text-sm text-text-secondary hover:text-text-primary transition-colors"
+            >
+              <ArrowLeft size={16} />
+            </button>
+            <Settings size={20} className="text-neon-purple" />
+            <h1 className="text-sm font-bold text-text-primary flex-1 truncate">
+              Configurar Práctica — {topic.title}
+            </h1>
+          </div>
+        </header>
+
+        <main className="max-w-2xl mx-auto px-4 py-8 space-y-6">
+          {/* ── Topic Selection ── */}
+          {selectableTopics.length > 1 && (
+            <Card glow="purple">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-bold text-text-primary uppercase tracking-wider">
+                  Selecciona los temas a practicar
+                </h3>
+                <div className="flex gap-2">
+                  <button
+                    onClick={selectAll}
+                    className="text-xs text-neon-cyan hover:text-neon-cyan/80 transition-colors"
+                  >
+                    Todos
+                  </button>
+                  <span className="text-text-muted text-xs">|</span>
+                  <button
+                    onClick={deselectAll}
+                    className="text-xs text-text-muted hover:text-text-secondary transition-colors"
+                  >
+                    Ninguno
+                  </button>
+                </div>
+              </div>
+              <div className="space-y-2">
+                {selectableTopics.map((st) => {
+                  const stats = getExerciseStats(st.id);
+                  const isSelected = selectedTopics.includes(st.id);
+                  return (
+                    <button
+                      key={st.id}
+                      onClick={() => toggleTopic(st.id)}
+                      className={`w-full flex items-center justify-between px-4 py-3 rounded-lg border transition-all text-left
+                        ${isSelected
+                          ? "bg-neon-purple/10 border-neon-purple/40 text-text-primary"
+                          : "bg-bg-secondary/50 border-text-muted/10 text-text-secondary hover:border-text-muted/30"
+                        }`}
+                    >
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-all
+                          ${isSelected ? "bg-neon-purple border-neon-purple" : "border-text-muted/30"}`}
+                        >
+                          {isSelected && <CheckCircle2 size={14} className="text-white" />}
+                        </div>
+                        <span className="text-sm truncate">{st.title}</span>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+                        {stats.attempted > 0 && (
+                          <span className="text-xs text-text-muted font-mono">
+                            {stats.correct}/{stats.attempted}
+                          </span>
+                        )}
+                        <Badge color={stats.attempted > 0 ? (stats.correct / stats.attempted >= 0.7 ? "green" : "gray") : "gray"}>
+                          {stats.attempted > 0
+                            ? `${Math.round((stats.correct / stats.attempted) * 100)}%`
+                            : "Nuevo"}
+                        </Badge>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </Card>
+          )}
+
+          {/* ── Difficulty Selection ── */}
+          <Card glow="cyan">
+            <h3 className="text-sm font-bold text-text-primary uppercase tracking-wider mb-4">
+              Dificultad
+            </h3>
+            <div className="grid grid-cols-6 gap-2">
+              <button
+                onClick={() => setDifficulty(0)}
+                className={`px-3 py-2.5 rounded-lg border text-xs font-semibold transition-all
+                  ${difficulty === 0
+                    ? "bg-neon-cyan/10 border-neon-cyan/40 text-neon-cyan"
+                    : "bg-bg-secondary/50 border-text-muted/10 text-text-secondary hover:border-text-muted/30"
+                  }`}
+              >
+                <Shuffle size={14} className="mx-auto mb-1" />
+                Mixta
+              </button>
+              {[1, 2, 3, 4, 5].map((d) => (
+                <button
+                  key={d}
+                  onClick={() => setDifficulty(d)}
+                  className={`px-3 py-2.5 rounded-lg border text-xs font-semibold transition-all
+                    ${difficulty === d
+                      ? "bg-neon-cyan/10 border-neon-cyan/40 text-neon-cyan"
+                      : "bg-bg-secondary/50 border-text-muted/10 text-text-secondary hover:border-text-muted/30"
+                    }`}
+                >
+                  <span className="block text-base mb-0.5">{"★".repeat(d)}</span>
+                  Nv.{d}
+                </button>
+              ))}
+            </div>
+          </Card>
+
+          {/* ── Problem Count ── */}
+          <Card>
+            <h3 className="text-sm font-bold text-text-primary uppercase tracking-wider mb-4">
+              Cantidad de problemas
+            </h3>
+            <div className="flex gap-2">
+              {[5, 8, 10, 15, 20, 30].map((n) => (
+                <button
+                  key={n}
+                  onClick={() => setProblemCount(n)}
+                  className={`flex-1 px-3 py-2.5 rounded-lg border text-sm font-mono font-bold transition-all
+                    ${problemCount === n
+                      ? "bg-neon-purple/10 border-neon-purple/40 text-neon-purple"
+                      : "bg-bg-secondary/50 border-text-muted/10 text-text-secondary hover:border-text-muted/30"
+                    }`}
+                >
+                  {n}
+                </button>
+              ))}
+            </div>
+          </Card>
+
+          {/* ── Exercise Stats Summary ── */}
+          {selectableTopics.some((t) => getExerciseStats(t.id).attempted > 0) && (
+            <Card>
+              <div className="flex items-center gap-2 mb-4">
+                <BarChart3 size={16} className="text-neon-cyan" />
+                <h3 className="text-sm font-bold text-text-primary uppercase tracking-wider">
+                  Tu historial en estos temas
+                </h3>
+              </div>
+              <div className="space-y-2">
+                {selectableTopics
+                  .filter((t) => getExerciseStats(t.id).attempted > 0)
+                  .map((t) => {
+                    const stats = getExerciseStats(t.id);
+                    const pct = Math.round((stats.correct / stats.attempted) * 100);
+                    return (
+                      <div key={t.id} className="flex items-center gap-3">
+                        <span className="text-xs text-text-secondary flex-1 truncate">{t.title}</span>
+                        <span className="text-xs text-text-muted font-mono w-16 text-right">
+                          {stats.correct}/{stats.attempted}
+                        </span>
+                        <div className="w-20">
+                          <ProgressBar
+                            value={pct}
+                            color={pct >= 70 ? "green" : pct >= 40 ? "cyan" : "purple"}
+                            showLabel={false}
+                            size="sm"
+                          />
+                        </div>
+                        <span className="text-xs font-mono w-10 text-right" style={{ color: pct >= 70 ? "var(--neon-green)" : "var(--text-muted)" }}>
+                          {pct}%
+                        </span>
+                      </div>
+                    );
+                  })}
+              </div>
+            </Card>
+          )}
+
+          {/* ── Start Button ── */}
+          <div className="flex gap-3">
+            <NeonButton
+              variant="ghost"
+              size="md"
+              icon={ArrowLeft}
+              onClick={() => router.push("/dashboard")}
+              className="flex-shrink-0"
+            >
+              Volver
+            </NeonButton>
+            <NeonButton
+              variant="cyan"
+              size="md"
+              icon={Play}
+              onClick={startPractice}
+              disabled={selectedTopics.length === 0}
+              className="flex-1"
+            >
+              Iniciar Práctica ({problemCount} problemas{difficulty > 0 ? ` · Dificultad ${difficulty}` : " · Mixta"})
+            </NeonButton>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // ════════════════════════════════════════════════════════════════
+  // PRACTICE MODE
+  // ════════════════════════════════════════════════════════════════
   if (problems.length === 0) {
     return (
       <div className="min-h-screen bg-bg-primary flex items-center justify-center p-4">
@@ -173,6 +461,15 @@ export default function ArenaPage() {
     );
   }
 
+  // Get calculator policy for current problem
+  const calcPolicy = currentProblem?.calculator_policy || "optional";
+  const policyMeta = CALC_POLICY_META[calcPolicy];
+  const PolicyIcon = policyMeta.icon;
+
+  // Get the topic name for current problem
+  const currentProblemTopic = getTopicById(currentProblem?.topic_id || "");
+  const currentProblemStats = getExerciseStats(currentProblem?.topic_id || "");
+
   return (
     <div className="min-h-screen bg-bg-primary bg-grid">
       {/* Top Bar */}
@@ -180,18 +477,17 @@ export default function ArenaPage() {
         <div className="max-w-3xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between mb-2">
             <button
-              onClick={() => router.push("/dashboard")}
+              onClick={() => setPageMode("config")}
               className="flex items-center gap-2 text-sm text-text-secondary hover:text-text-primary transition-colors"
             >
-              <ArrowLeft size={16} />
-              <span>Dashboard</span>
+              <Settings size={16} />
+              <span>Configurar</span>
             </button>
             <div className="flex items-center gap-2">
-              {isRandomMode && (
-                <Badge color="green">
-                  <Shuffle size={12} className="inline mr-1" />Random
-                </Badge>
-              )}
+              {/* Session counter */}
+              <Badge color="green">
+                {sessionStats.correct}/{sessionStats.attempted}
+              </Badge>
               <Badge color="purple">
                 {currentIndex + 1} / {problems.length}
               </Badge>
@@ -200,7 +496,7 @@ export default function ArenaPage() {
           </div>
           <div className="flex items-center gap-3">
             <h1 className="text-sm font-bold text-text-primary flex-1 truncate">
-              {topic.title}
+              {currentProblemTopic?.title || topic.title}
             </h1>
             <ProgressBar
               value={currentIndex + 1}
@@ -225,14 +521,40 @@ export default function ArenaPage() {
             {/* Problem Card */}
             <motion.div animate={shake ? { x: [-4, 4, -4, 4, 0] } : {}} transition={{ duration: 0.4 }}>
               <Card glow="cyan" className="mb-6">
-                <div className="flex items-center justify-between mb-4">
-                  <Badge color="purple">
-                    Dificultad: {"★".repeat(currentProblem.difficulty)}{"☆".repeat(5 - currentProblem.difficulty)}
-                  </Badge>
-                  {attempts > 0 && state === "solving" && (
-                    <Badge color="gray">Intentos: {attempts}</Badge>
-                  )}
+                <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+                  <div className="flex items-center gap-2">
+                    <Badge color="purple">
+                      Dificultad: {"★".repeat(currentProblem.difficulty)}{"☆".repeat(5 - currentProblem.difficulty)}
+                    </Badge>
+                    {/* Calculator policy indicator */}
+                    <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border
+                      ${calcPolicy === "mental" ? "bg-green-500/10 border-green-500/30" : ""}
+                      ${calcPolicy === "optional" ? "bg-yellow-500/10 border-yellow-500/30" : ""}
+                      ${calcPolicy === "calculator" ? "bg-cyan-500/10 border-cyan-500/30" : ""}
+                    `}
+                      title={policyMeta.description}
+                    >
+                      <PolicyIcon size={12} className={policyMeta.color} />
+                      <span className={policyMeta.color}>{policyMeta.label}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {/* Exercise counter for this topic */}
+                    <span className="text-xs text-text-muted font-mono" title="Ejercicios resueltos de este tema">
+                      📊 {currentProblemStats.correct}/{currentProblemStats.attempted} resueltos
+                    </span>
+                    {attempts > 0 && state === "solving" && (
+                      <Badge color="gray">Intentos: {attempts}</Badge>
+                    )}
+                  </div>
                 </div>
+
+                {/* Show subtopic name if practicing mixed topics */}
+                {selectedTopics.length > 1 && currentProblemTopic && (
+                  <div className="mb-2 px-2 py-1 rounded bg-bg-secondary/50 inline-block">
+                    <span className="text-xs text-text-muted">{currentProblemTopic.title}</span>
+                  </div>
+                )}
 
                 <div className="text-lg text-text-primary leading-relaxed py-4">
                   <MathRender content={currentProblem.statement_latex} block />
@@ -264,9 +586,7 @@ export default function ArenaPage() {
                     <NeonButton variant="green" icon={ChevronRight} onClick={nextProblem}>
                       {currentIndex < problems.length - 1
                         ? "Siguiente Problema"
-                        : isRandomMode
-                          ? "Generar Nuevos"
-                          : "Finalizar"}
+                        : "Generar Nuevos"}
                     </NeonButton>
                   </Card>
                 </motion.div>
@@ -302,9 +622,7 @@ export default function ArenaPage() {
                       <NeonButton variant="purple" icon={ChevronRight} onClick={nextProblem}>
                         {currentIndex < problems.length - 1
                           ? "Siguiente Problema"
-                          : isRandomMode
-                            ? "Generar Nuevos"
-                            : "Finalizar"}
+                          : "Generar Nuevos"}
                       </NeonButton>
                     </div>
                   </Card>
@@ -448,16 +766,22 @@ export default function ArenaPage() {
                   Rendirse (Ver Solución)
                 </NeonButton>
                 <div className="flex gap-2">
-                  {hasGenerator(topicId) && (
-                    <NeonButton
-                      variant="ghost"
-                      size="sm"
-                      icon={RefreshCw}
-                      onClick={() => loadProblems(true)}
-                    >
-                      Regenerar
-                    </NeonButton>
-                  )}
+                  <NeonButton
+                    variant="ghost"
+                    size="sm"
+                    icon={Settings}
+                    onClick={() => setPageMode("config")}
+                  >
+                    Reconfigurar
+                  </NeonButton>
+                  <NeonButton
+                    variant="ghost"
+                    size="sm"
+                    icon={RefreshCw}
+                    onClick={startPractice}
+                  >
+                    Regenerar
+                  </NeonButton>
                   <NeonButton
                     variant="ghost"
                     size="sm"

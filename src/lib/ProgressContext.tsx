@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useState, useCallback, useRef } f
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/AuthContext";
 import { seedTopics } from "@/lib/seedData";
-import { TopicStatus, TopicWithProgress } from "@/lib/types";
+import { TopicStatus, TopicWithProgress, ExerciseStats } from "@/lib/types";
 
 interface ProgressEntry {
   status: TopicStatus;
@@ -18,6 +18,10 @@ interface ProgressContextType {
   addScore: (topicId: string, points: number) => void;
   getTopicsTree: () => TopicWithProgress[];
   resetProgress: () => void;
+  /** Exercise stats tracking */
+  getExerciseStats: (topicId: string) => ExerciseStats;
+  recordExercise: (topicId: string, correct: boolean) => void;
+  getAllExerciseStats: () => Map<string, ExerciseStats>;
 }
 
 const ProgressContext = createContext<ProgressContextType>({
@@ -26,15 +30,33 @@ const ProgressContext = createContext<ProgressContextType>({
   addScore: () => {},
   getTopicsTree: () => [],
   resetProgress: () => {},
+  getExerciseStats: () => ({ attempted: 0, correct: 0 }),
+  recordExercise: () => {},
+  getAllExerciseStats: () => new Map(),
 });
 
 export function ProgressProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const [progressMap, setProgressMap] = useState<Map<string, ProgressEntry>>(new Map());
   const [progressLoading, setProgressLoading] = useState(true);
+  const [exerciseStatsMap, setExerciseStatsMap] = useState<Map<string, ExerciseStats>>(new Map());
   // Keep a mutable ref so fire-and-forget helpers always see latest map
   const mapRef = useRef(progressMap);
   mapRef.current = progressMap;
+
+  // ── Load exercise stats from localStorage ──
+  useEffect(() => {
+    try {
+      const key = user ? `exercise-stats-${user.id}` : "exercise-stats-guest";
+      const stored = localStorage.getItem(key);
+      if (stored) {
+        const parsed = JSON.parse(stored) as Record<string, ExerciseStats>;
+        const map = new Map<string, ExerciseStats>();
+        Object.entries(parsed).forEach(([k, v]) => map.set(k, v));
+        setExerciseStatsMap(map);
+      }
+    } catch { /* ignore */ }
+  }, [user]);
 
   // ── Build default progress from seed data ──
   const buildDefaults = useCallback((): Map<string, ProgressEntry> => {
@@ -235,9 +257,50 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
       });
   }, [user, buildDefaults]);
 
+  // ── Exercise stats ──
+  const persistExerciseStats = useCallback((map: Map<string, ExerciseStats>) => {
+    try {
+      const key = user ? `exercise-stats-${user.id}` : "exercise-stats-guest";
+      const obj: Record<string, ExerciseStats> = {};
+      map.forEach((v, k) => { obj[k] = v; });
+      localStorage.setItem(key, JSON.stringify(obj));
+    } catch { /* ignore */ }
+  }, [user]);
+
+  const getExerciseStats = useCallback((topicId: string): ExerciseStats => {
+    return exerciseStatsMap.get(topicId) || { attempted: 0, correct: 0 };
+  }, [exerciseStatsMap]);
+
+  const recordExercise = useCallback((topicId: string, correct: boolean) => {
+    setExerciseStatsMap((prev) => {
+      const next = new Map(prev);
+      const current = next.get(topicId) || { attempted: 0, correct: 0 };
+      const updated = {
+        attempted: current.attempted + 1,
+        correct: current.correct + (correct ? 1 : 0),
+      };
+      next.set(topicId, updated);
+      setTimeout(() => persistExerciseStats(next), 0);
+      return next;
+    });
+  }, [persistExerciseStats]);
+
+  const getAllExerciseStats = useCallback(() => {
+    return new Map(exerciseStatsMap);
+  }, [exerciseStatsMap]);
+
   return (
     <ProgressContext.Provider
-      value={{ progressLoading, getTopicProgress, addScore, getTopicsTree, resetProgress }}
+      value={{
+        progressLoading,
+        getTopicProgress,
+        addScore,
+        getTopicsTree,
+        resetProgress,
+        getExerciseStats,
+        recordExercise,
+        getAllExerciseStats,
+      }}
     >
       {children}
     </ProgressContext.Provider>
