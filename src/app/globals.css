@@ -2,26 +2,240 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@import "katex/dist/katex.min.css";
+
+/* ═══════════════════════════════════════════
+   THEME SYSTEM — CSS Custom Properties
+   ═══════════════════════════════════════════ */
+
+:root,
+[data-theme="cyberpunk"] {
+  /* Backgrounds */
+  --bg-primary: #0a0a0f;
+  --bg-secondary: #111118;
+  --bg-card: #16161f;
+  --bg-hover: #1e1e2a;
+  /* Accents */
+  --neon-cyan: #00f0ff;
+  --neon-purple: #b24bff;
+  --neon-pink: #ff2daa;
+  --neon-green: #00ff88;
+  /* Text */
+  --text-primary: #e8e8f0;
+  --text-secondary: #9090a8;
+  --text-muted: #505068;
+  /* Glow intensity */
+  --glow-strength: 0.3;
+  --glow-spread: 0.1;
+  /* Grid */
+  --grid-color: rgba(0, 240, 255, 0.03);
+  /* Scrollbar */
+  --scrollbar-track: #111118;
+  --scrollbar-thumb: #303048;
+  --scrollbar-hover: var(--neon-cyan);
+  /* Border radius style */
+  --radius-base: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  /* Font weight accent */
+  --font-heading: 700;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+[data-theme="solarpunk"] {
+  --bg-primary: #0f1a12;
+  --bg-secondary: #152019;
+  --bg-card: #1a2b1f;
+  --bg-hover: #223627;
+  --neon-cyan: #4ade80;
+  --neon-purple: #a78bfa;
+  --neon-pink: #f9a825;
+  --neon-green: #22c55e;
+  --text-primary: #e8f5e9;
+  --text-secondary: #81c784;
+  --text-muted: #4a7a50;
+  --glow-strength: 0.25;
+  --glow-spread: 0.08;
+  --grid-color: rgba(74, 222, 128, 0.03);
+  --scrollbar-track: #152019;
+  --scrollbar-thumb: #2d5a34;
+  --scrollbar-hover: var(--neon-cyan);
+  --radius-base: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+}
+
+[data-theme="neobrutal"] {
+  --bg-primary: #fffbe6;
+  --bg-secondary: #fff3cd;
+  --bg-card: #ffffff;
+  --bg-hover: #fef3c7;
+  --neon-cyan: #000000;
+  --neon-purple: #6d28d9;
+  --neon-pink: #e11d48;
+  --neon-green: #16a34a;
+  --text-primary: #1a1a1a;
+  --text-secondary: #525252;
+  --text-muted: #a3a3a3;
+  --glow-strength: 0;
+  --glow-spread: 0;
+  --grid-color: rgba(0, 0, 0, 0.04);
+  --scrollbar-track: #fff3cd;
+  --scrollbar-thumb: #1a1a1a;
+  --scrollbar-hover: #6d28d9;
+  --radius-base: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
+}
+
+[data-theme="bauhaus"] {
+  --bg-primary: #f5f0e8;
+  --bg-secondary: #ece5d8;
+  --bg-card: #ffffff;
+  --bg-hover: #e8e0d0;
+  --neon-cyan: #1a56db;
+  --neon-purple: #dc2626;
+  --neon-pink: #f59e0b;
+  --neon-green: #059669;
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --text-muted: #9ca3af;
+  --glow-strength: 0;
+  --glow-spread: 0;
+  --grid-color: rgba(26, 86, 219, 0.03);
+  --scrollbar-track: #ece5d8;
+  --scrollbar-thumb: #111827;
+  --scrollbar-hover: #1a56db;
+  --radius-base: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
+}
+
+[data-theme="midnight"] {
+  --bg-primary: #0c0a1d;
+  --bg-secondary: #13102e;
+  --bg-card: #1a1640;
+  --bg-hover: #221d52;
+  --neon-cyan: #818cf8;
+  --neon-purple: #c084fc;
+  --neon-pink: #f472b6;
+  --neon-green: #34d399;
+  --text-primary: #eef2ff;
+  --text-secondary: #a5b4fc;
+  --text-muted: #6366a0;
+  --glow-strength: 0.35;
+  --glow-spread: 0.15;
+  --grid-color: rgba(129, 140, 248, 0.03);
+  --scrollbar-track: #13102e;
+  --scrollbar-thumb: #3730a3;
+  --scrollbar-hover: var(--neon-cyan);
+  --radius-base: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+}
+
+[data-theme="retrowave"] {
+  --bg-primary: #1a0828;
+  --bg-secondary: #220d35;
+  --bg-card: #2d1245;
+  --bg-hover: #3a1858;
+  --neon-cyan: #ff6ec7;
+  --neon-purple: #7b2dff;
+  --neon-pink: #ff2975;
+  --neon-green: #ffd700;
+  --text-primary: #ffe4f1;
+  --text-secondary: #c898d8;
+  --text-muted: #6b4580;
+  --glow-strength: 0.4;
+  --glow-spread: 0.15;
+  --grid-color: rgba(255, 110, 199, 0.04);
+  --scrollbar-track: #220d35;
+  --scrollbar-thumb: #6b2fa0;
+  --scrollbar-hover: var(--neon-cyan);
+  --radius-base: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+}
+
+/* ═══════════════════════════════════════════
+   BASE STYLES
+   ═══════════════════════════════════════════ */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: "Geist Sans", system-ui, -apple-system, sans-serif;
+  overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-hover);
+}
+
+.katex {
+  font-size: 1.1em;
+}
+
+.katex-display {
+  margin: 0.5em 0;
+}
+
+/* Neobrutal extra: thick borders on cards */
+[data-theme="neobrutal"] .neobrutal-border {
+  border: 3px solid #1a1a1a !important;
+  box-shadow: 4px 4px 0px #1a1a1a !important;
+}
+
+/* Bauhaus extra: geometric accent bar */
+[data-theme="bauhaus"] .bauhaus-accent {
+  border-left: 4px solid var(--neon-purple);
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+  .neon-border-cyan {
+    border: 1px solid color-mix(in srgb, var(--neon-cyan) 30%, transparent);
+    box-shadow: 0 0 15px color-mix(in srgb, var(--neon-cyan) calc(var(--glow-strength) * 100%), transparent),
+                inset 0 0 15px color-mix(in srgb, var(--neon-cyan) calc(var(--glow-spread) * 100%), transparent);
+  }
+  .neon-border-purple {
+    border: 1px solid color-mix(in srgb, var(--neon-purple) 30%, transparent);
+    box-shadow: 0 0 15px color-mix(in srgb, var(--neon-purple) calc(var(--glow-strength) * 100%), transparent),
+                inset 0 0 15px color-mix(in srgb, var(--neon-purple) calc(var(--glow-spread) * 100%), transparent);
+  }
+  .neon-text-cyan {
+    color: var(--neon-cyan);
+    text-shadow: 0 0 10px color-mix(in srgb, var(--neon-cyan) 50%, transparent);
+  }
+  .neon-text-purple {
+    color: var(--neon-purple);
+    text-shadow: 0 0 10px color-mix(in srgb, var(--neon-purple) 50%, transparent);
+  }
+  .bg-grid {
+    background-image:
+      linear-gradient(var(--grid-color) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+    background-size: 40px 40px;
   }
 }
