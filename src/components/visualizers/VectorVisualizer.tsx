@@ -1,5 +1,6 @@
 "use client";
 import { useRef, useEffect, useState, useCallback } from "react";
+import { getCanvasTheme } from "./canvasTheme";
 
 export default function VectorVisualizer() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -20,11 +21,13 @@ export default function VectorVisualizer() {
     const cy = h / 2;
     const scale = 35;
 
-    ctx.fillStyle = "#0a0a0f";
+    const tc = getCanvasTheme();
+
+    ctx.fillStyle = tc.bg;
     ctx.fillRect(0, 0, w, h);
 
     // Grid
-    ctx.strokeStyle = "#1a1a2f";
+    ctx.strokeStyle = tc.grid;
     ctx.lineWidth = 1;
     for (let i = -10; i <= 10; i++) {
       ctx.beginPath();
@@ -38,7 +41,7 @@ export default function VectorVisualizer() {
     }
 
     // Axes
-    ctx.strokeStyle = "#555";
+    ctx.strokeStyle = tc.axis;
     ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(w, cy); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, h); ctx.stroke();
@@ -78,16 +81,16 @@ export default function VectorVisualizer() {
     };
 
     // Vector 1
-    drawArrow(0, 0, v1.x, v1.y, "#00f0ff", `v₁(${v1.x},${v1.y})`);
+    drawArrow(0, 0, v1.x, v1.y, tc.accent, `v₁(${v1.x},${v1.y})`);
 
     // Vector 2
-    drawArrow(0, 0, v2.x, v2.y, "#b24bff", `v₂(${v2.x},${v2.y})`);
+    drawArrow(0, 0, v2.x, v2.y, tc.accent4, `v₂(${v2.x},${v2.y})`);
 
     // Sum vector
     if (showSum) {
       const sum = { x: v1.x + v2.x, y: v1.y + v2.y };
       // Parallelogram
-      ctx.strokeStyle = "rgba(255, 45, 170, 0.3)";
+      ctx.strokeStyle = tc.accent2 + "4d";
       ctx.lineWidth = 1;
       ctx.setLineDash([4, 4]);
       ctx.beginPath();
@@ -98,7 +101,7 @@ export default function VectorVisualizer() {
       ctx.stroke();
       ctx.setLineDash([]);
 
-      drawArrow(0, 0, sum.x, sum.y, "#ff2daa", `v₁+v₂(${sum.x},${sum.y})`);
+      drawArrow(0, 0, sum.x, sum.y, tc.accent2, `v₁+v₂(${sum.x},${sum.y})`);
     }
 
     // Dot product info
@@ -109,7 +112,7 @@ export default function VectorVisualizer() {
       const cosAngle = mag1 && mag2 ? dot / (mag1 * mag2) : 0;
       const angleDeg = (Math.acos(Math.max(-1, Math.min(1, cosAngle))) * 180) / Math.PI;
 
-      ctx.fillStyle = "#fff";
+      ctx.fillStyle = tc.text;
       ctx.font = "13px monospace";
       ctx.textAlign = "left";
       const infoX = 10;
@@ -117,9 +120,9 @@ export default function VectorVisualizer() {
       ctx.fillText(`v₁ · v₂ = ${dot.toFixed(2)}`, infoX, infoY); infoY += 18;
       ctx.fillText(`|v₁| = ${mag1.toFixed(2)}`, infoX, infoY); infoY += 18;
       ctx.fillText(`|v₂| = ${mag2.toFixed(2)}`, infoX, infoY); infoY += 18;
-      ctx.fillStyle = "#00ff88";
+      ctx.fillStyle = tc.accent3;
       ctx.fillText(`θ = ${angleDeg.toFixed(1)}°`, infoX, infoY); infoY += 18;
-      ctx.fillStyle = dot === 0 ? "#00ff88" : "#888";
+      ctx.fillStyle = dot === 0 ? tc.accent3 : tc.label;
       ctx.fillText(dot === 0 ? "⊥ ORTOGONALES" : "", infoX, infoY);
     }
   }, [v1, v2, showSum, showDot]);
@@ -133,33 +136,33 @@ export default function VectorVisualizer() {
           <label className="text-xs text-neon-cyan">Vector 1</label>
           <div className="flex gap-2">
             <input type="number" value={v1.x} onChange={(e) => setV1({ ...v1, x: Number(e.target.value) })}
-              className="w-16 bg-gray-900 border border-gray-700 rounded px-2 py-1 text-white text-sm font-mono text-center" />
+              className="w-16 bg-bg-secondary border border-text-muted/30 rounded px-2 py-1 text-text-primary text-sm font-mono text-center" />
             <input type="number" value={v1.y} onChange={(e) => setV1({ ...v1, y: Number(e.target.value) })}
-              className="w-16 bg-gray-900 border border-gray-700 rounded px-2 py-1 text-white text-sm font-mono text-center" />
+              className="w-16 bg-bg-secondary border border-text-muted/30 rounded px-2 py-1 text-text-primary text-sm font-mono text-center" />
           </div>
         </div>
         <div className="space-y-1">
           <label className="text-xs text-neon-purple">Vector 2</label>
           <div className="flex gap-2">
             <input type="number" value={v2.x} onChange={(e) => setV2({ ...v2, x: Number(e.target.value) })}
-              className="w-16 bg-gray-900 border border-gray-700 rounded px-2 py-1 text-white text-sm font-mono text-center" />
+              className="w-16 bg-bg-secondary border border-text-muted/30 rounded px-2 py-1 text-text-primary text-sm font-mono text-center" />
             <input type="number" value={v2.y} onChange={(e) => setV2({ ...v2, y: Number(e.target.value) })}
-              className="w-16 bg-gray-900 border border-gray-700 rounded px-2 py-1 text-white text-sm font-mono text-center" />
+              className="w-16 bg-bg-secondary border border-text-muted/30 rounded px-2 py-1 text-text-primary text-sm font-mono text-center" />
           </div>
         </div>
       </div>
       <div className="flex gap-4">
         <label className="flex items-center gap-2 cursor-pointer">
           <input type="checkbox" checked={showSum} onChange={() => setShowSum(!showSum)} className="accent-neon-pink" />
-          <span className="text-sm text-gray-400">Suma</span>
+          <span className="text-sm text-text-muted">Suma</span>
         </label>
         <label className="flex items-center gap-2 cursor-pointer">
           <input type="checkbox" checked={showDot} onChange={() => setShowDot(!showDot)} className="accent-neon-green" />
-          <span className="text-sm text-gray-400">Info prod. punto</span>
+          <span className="text-sm text-text-muted">Info prod. punto</span>
         </label>
       </div>
       <canvas ref={canvasRef} width={500} height={500}
-        className="w-full rounded-lg border border-gray-800"
+        className="w-full rounded-lg border border-text-muted/20"
         style={{ maxWidth: 500, margin: "0 auto", display: "block" }} />
     </div>
   );

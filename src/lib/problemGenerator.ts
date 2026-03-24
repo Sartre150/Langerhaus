@@ -188,7 +188,7 @@ const genPercentages: Gen = (d) => {
       ? `Un artículo cuesta $\\$${price}$ y tiene un descuento del $${pct}\\%$. ¿Cuál es el precio final?`
       : `Un artículo cuesta $\\$${price}$ y sube un $${pct}\\%$. ¿Cuál es el nuevo precio?`,
     `${ans}`,
-    `Calcula primero el ${pct}\\% de $${price}$.`,
+    `Calcula primero el $${pct}\\%$ de $\\$${price}$.`,
     `$${price} \\times \\frac{${pct}}{100} = ${change}$. Luego ${isDiscount ? "resta" : "suma"}.`,
     `$${price} ${isDiscount ? "-" : "+"} ${change} = ${ans}$`);
 };

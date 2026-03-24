@@ -1,5 +1,6 @@
 "use client";
 import { useRef, useEffect, useState, useCallback } from "react";
+import { getCanvasTheme } from "./canvasTheme";
 
 export default function MatrixTransformVisualizer() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -28,11 +29,13 @@ export default function MatrixTransformVisualizer() {
     const cy = h / 2;
     const scale = 40;
 
-    ctx.fillStyle = "#0a0a0f";
+    const tc = getCanvasTheme();
+
+    ctx.fillStyle = tc.bg;
     ctx.fillRect(0, 0, w, h);
 
     // Grid
-    ctx.strokeStyle = "#1a1a2f";
+    ctx.strokeStyle = tc.grid;
     for (let i = -10; i <= 10; i++) {
       ctx.beginPath();
       ctx.moveTo(cx + i * scale, 0);
@@ -45,7 +48,7 @@ export default function MatrixTransformVisualizer() {
     }
 
     // Axes
-    ctx.strokeStyle = "#555";
+    ctx.strokeStyle = tc.axis;
     ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(w, cy); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, h); ctx.stroke();
@@ -54,7 +57,7 @@ export default function MatrixTransformVisualizer() {
 
     // Unit square (original - faded)
     const origPts: [number, number][] = [[0, 0], [1, 0], [1, 1], [0, 1]];
-    ctx.strokeStyle = "rgba(136, 136, 136, 0.5)";
+    ctx.strokeStyle = tc.label + "80";
     ctx.lineWidth = 1.5;
     ctx.setLineDash([4, 4]);
     ctx.beginPath();
@@ -69,10 +72,10 @@ export default function MatrixTransformVisualizer() {
 
     // Transformed square
     const transPts = origPts.map(([x, y]) => [ma * x + mb * y, mc * x + md * y] as [number, number]);
-    ctx.fillStyle = "rgba(0, 240, 255, 0.1)";
-    ctx.strokeStyle = "#00f0ff";
+    ctx.fillStyle = tc.accent + "1a";
+    ctx.strokeStyle = tc.accent;
     ctx.lineWidth = 2.5;
-    ctx.shadowColor = "#00f0ff";
+    ctx.shadowColor = tc.accent;
     ctx.shadowBlur = 6;
     ctx.beginPath();
     transPts.forEach(([x, y], i) => {
@@ -109,29 +112,29 @@ export default function MatrixTransformVisualizer() {
 
     // e1 original (faded)
     ctx.globalAlpha = 0.3;
-    drawArrow(0, 0, 1, 0, "#ff2daa");
-    drawArrow(0, 0, 0, 1, "#00ff88");
+    drawArrow(0, 0, 1, 0, tc.accent2);
+    drawArrow(0, 0, 0, 1, tc.accent3);
     ctx.globalAlpha = 1;
 
     // Transformed basis vectors
-    drawArrow(0, 0, ma, mc, "#ff2daa");
-    drawArrow(0, 0, mb, md, "#00ff88");
+    drawArrow(0, 0, ma, mc, tc.accent2);
+    drawArrow(0, 0, mb, md, tc.accent3);
 
     // Labels
     ctx.font = "bold 12px monospace";
     ctx.textAlign = "left";
-    ctx.fillStyle = "#ff2daa";
+    ctx.fillStyle = tc.accent2;
     ctx.fillText(`Ae₁ = (${ma.toFixed(1)}, ${mc.toFixed(1)})`, cx + ma * scale + 10, cy - mc * scale);
-    ctx.fillStyle = "#00ff88";
+    ctx.fillStyle = tc.accent3;
     ctx.fillText(`Ae₂ = (${mb.toFixed(1)}, ${md.toFixed(1)})`, cx + mb * scale + 10, cy - md * scale);
 
     // Det
     const det = ma * md - mb * mc;
-    ctx.fillStyle = "#fff";
+    ctx.fillStyle = tc.text;
     ctx.font = "bold 14px monospace";
     ctx.textAlign = "right";
     ctx.fillText(`det(A) = ${det.toFixed(3)}`, w - 10, 20);
-    ctx.fillStyle = det > 0 ? "#00ff88" : det < 0 ? "#ff2daa" : "#888";
+    ctx.fillStyle = det > 0 ? tc.accent3 : det < 0 ? tc.accent2 : tc.label;
     ctx.font = "12px monospace";
     ctx.fillText(det > 0 ? "Preserva orientación" : det < 0 ? "Invierte orientación" : "Singular (colapsa)", w - 10, 38);
   }, [matrix]);
@@ -156,7 +159,7 @@ export default function MatrixTransformVisualizer() {
             className={`px-2 py-1 text-xs rounded border transition ${
               preset === key
                 ? "bg-neon-cyan/20 border-neon-cyan text-neon-cyan"
-                : "border-gray-700 text-gray-400 hover:border-gray-500"
+                : "border-text-muted/30 text-text-muted hover:border-text-muted/60"
             }`}
           >
             {label}
@@ -164,8 +167,8 @@ export default function MatrixTransformVisualizer() {
         ))}
       </div>
       <div className="flex justify-center gap-2 items-center">
-        <span className="text-gray-400 text-sm">A =</span>
-        <div className="grid grid-cols-2 gap-1 border border-gray-700 rounded p-2">
+        <span className="text-text-muted text-sm">A =</span>
+        <div className="grid grid-cols-2 gap-1 border border-text-muted/30 rounded p-2">
           {(["a", "b", "c", "d"] as const).map((k) => (
             <input
               key={k}
@@ -173,15 +176,15 @@ export default function MatrixTransformVisualizer() {
               step={0.1}
               value={matrix[k]}
               onChange={(e) => { setMatrix({ ...matrix, [k]: Number(e.target.value) }); setPreset("custom"); }}
-              className="w-16 bg-gray-900 border border-gray-700 rounded px-2 py-1 text-white text-sm font-mono text-center"
+              className="w-16 bg-bg-secondary border border-text-muted/30 rounded px-2 py-1 text-text-primary text-sm font-mono text-center"
             />
           ))}
         </div>
       </div>
       <canvas ref={canvasRef} width={500} height={500}
-        className="w-full rounded-lg border border-gray-800"
+        className="w-full rounded-lg border border-text-muted/20"
         style={{ maxWidth: 500, margin: "0 auto", display: "block" }} />
-      <div className="text-xs text-gray-500 text-center">
+      <div className="text-xs text-text-muted text-center">
         <span className="text-neon-pink">Rosa</span> = Ae₁, <span className="text-neon-green">Verde</span> = Ae₂. Líneas punteadas = vectores originales.
       </div>
     </div>

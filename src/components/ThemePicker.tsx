@@ -4,11 +4,7 @@ import { motion } from "framer-motion";
 import { Check, Palette } from "lucide-react";
 import { themes, useTheme, ThemeId } from "@/lib/ThemeContext";
 
-interface ThemePickerProps {
-  onClose: () => void;
-}
-
-export default function ThemePicker({ onClose }: ThemePickerProps) {
+export default function ThemePicker() {
   const { theme, setTheme } = useTheme();
 
   const lightThemes = themes.filter((t) => ["cuaderno", "domingo"].includes(t.id));
@@ -23,7 +19,6 @@ export default function ThemePicker({ onClose }: ThemePickerProps) {
         whileTap={{ scale: 0.98 }}
         onClick={() => {
           setTheme(t.id as ThemeId);
-          setTimeout(onClose, 300);
         }}
         className={`relative rounded-2xl p-3.5 text-left transition-all border-2 ${
           isActive

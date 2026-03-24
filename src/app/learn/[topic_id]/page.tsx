@@ -51,9 +51,9 @@ export default function LearnPage() {
 
   if (!topic) {
     return (
-      <div className="min-h-screen bg-primary flex items-center justify-center">
+      <div className="min-h-screen bg-bg-primary flex items-center justify-center">
         <Card className="p-8 text-center">
-          <p className="text-gray-400 mb-4">Contenido de aprendizaje no encontrado para este tema.</p>
+          <p className="text-text-secondary mb-4">Contenido de aprendizaje no encontrado para este tema.</p>
           <NeonButton onClick={() => router.push("/dashboard")}>Volver al Dashboard</NeonButton>
         </Card>
       </div>
@@ -62,11 +62,11 @@ export default function LearnPage() {
 
   if (!explanation) {
     return (
-      <div className="min-h-screen bg-primary flex items-center justify-center">
+      <div className="min-h-screen bg-bg-primary flex items-center justify-center">
         <Card className="p-8 text-center max-w-md">
           <Brain size={48} className="mx-auto text-neon-purple mb-4" />
-          <h2 className="text-xl font-bold text-white mb-2">{topic.title}</h2>
-          <p className="text-gray-400 mb-6">El contenido de aprendizaje profundo para este tema se está desarrollando. Por ahora, ve directamente a practicar.</p>
+          <h2 className="text-xl font-bold text-text-primary mb-2">{topic.title}</h2>
+          <p className="text-text-secondary mb-6">El contenido de aprendizaje profundo para este tema se está desarrollando. Por ahora, ve directamente a practicar.</p>
           <div className="flex gap-3 justify-center">
             <NeonButton variant="ghost" onClick={() => router.push("/dashboard")}>
               <ArrowLeft size={16} /> Dashboard
@@ -81,17 +81,17 @@ export default function LearnPage() {
   }
 
   return (
-    <div className="min-h-screen bg-primary">
+    <div className="min-h-screen bg-bg-primary">
       {/* Header */}
-      <header className="sticky top-0 z-50 border-b border-gray-800 bg-primary/90 backdrop-blur-md">
+      <header className="sticky top-0 z-50 border-b border-text-muted/20 bg-bg-primary/90 backdrop-blur-md">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <button onClick={() => router.push("/dashboard")} className="text-gray-400 hover:text-white transition">
+            <button onClick={() => router.push("/dashboard")} className="text-text-muted hover:text-text-primary transition">
               <ArrowLeft size={20} />
             </button>
             <div>
-              <h1 className="text-lg font-bold text-white">{topic.title}</h1>
-              <p className="text-xs text-gray-500">Nivel {topic.level}</p>
+              <h1 className="text-lg font-bold text-text-primary">{topic.title}</h1>
+              <p className="text-xs text-text-muted">Nivel {topic.level}</p>
             </div>
           </div>
           <NeonButton variant="green" onClick={() => router.push(`/arena/${topicId}`)}>
@@ -109,7 +109,7 @@ export default function LearnPage() {
                 className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition whitespace-nowrap ${
                   activeTab === tab.id
                     ? "border-neon-cyan text-neon-cyan"
-                    : "border-transparent text-gray-500 hover:text-gray-300"
+                    : "border-transparent text-text-muted hover:text-text-secondary"
                 }`}
               >
                 {tab.icon} {tab.label}
@@ -159,7 +159,7 @@ function TeoriaTab({
           <Sparkles size={24} className="text-neon-cyan shrink-0 mt-1" />
           <div>
             <h3 className="text-lg font-bold text-neon-cyan mb-2">¿Por qué importa?</h3>
-            <p className="text-gray-300 leading-relaxed">{explanation.why_it_matters}</p>
+            <p className="text-text-secondary leading-relaxed">{explanation.why_it_matters}</p>
           </div>
         </div>
       </Card>
@@ -169,16 +169,16 @@ function TeoriaTab({
         {explanation.theory_sections.map((section, i) => (
           <Card key={i} className="overflow-hidden">
             <button
-              className="w-full text-left p-4 flex items-center justify-between hover:bg-white/5 transition"
+              className="w-full text-left p-4 flex items-center justify-between hover:bg-bg-hover transition"
               onClick={() => setExpandedSection(expandedSection === i ? -1 : i)}
             >
-              <span className="font-semibold text-white flex items-center gap-2">
+              <span className="font-semibold text-text-primary flex items-center gap-2">
                 <BookOpen size={16} className="text-neon-purple" />
                 {section.title}
               </span>
               <ChevronRight
                 size={18}
-                className={`text-gray-400 transition-transform ${expandedSection === i ? "rotate-90" : ""}`}
+                className={`text-text-muted transition-transform ${expandedSection === i ? "rotate-90" : ""}`}
               />
             </button>
             <AnimatePresence>
@@ -190,8 +190,8 @@ function TeoriaTab({
                   transition={{ duration: 0.25 }}
                   className="overflow-hidden"
                 >
-                  <div className="px-4 pb-4 border-t border-gray-800 pt-3">
-                    <div className="text-gray-300 leading-relaxed math-content">
+                  <div className="px-4 pb-4 border-t border-text-muted/20 pt-3">
+                    <div className="text-text-secondary leading-relaxed math-content">
                       <MathRender content={section.content_latex} />
                     </div>
                   </div>
@@ -210,8 +210,8 @@ function TeoriaTab({
           </h3>
           <div className="grid gap-3 sm:grid-cols-2">
             {explanation.key_formulas.map((f, i) => (
-              <div key={i} className="bg-gray-900/50 rounded-lg p-3 border border-gray-800">
-                <span className="text-xs text-gray-500 block mb-1">{f.name}</span>
+              <div key={i} className="bg-bg-secondary/50 rounded-lg p-3 border border-text-muted/20">
+                <span className="text-xs text-text-muted block mb-1">{f.name}</span>
                 <div className="text-lg">
                   <MathRender content={f.formula_latex} />
                 </div>
@@ -225,11 +225,11 @@ function TeoriaTab({
       {explanation.pro_tips.length > 0 && (
         <Card glow="purple" className="p-6">
           <h3 className="text-lg font-bold text-neon-purple mb-3 flex items-center gap-2">
-            <Lightbulb size={20} /> Pro Tips
+            <Lightbulb size={20} /> Consejos Clave
           </h3>
           <ul className="space-y-2">
             {explanation.pro_tips.map((tip, i) => (
-              <li key={i} className="flex items-start gap-2 text-gray-300">
+              <li key={i} className="flex items-start gap-2 text-text-secondary">
                 <span className="text-neon-purple shrink-0 mt-1">▸</span>
                 <MathRender content={tip} />
               </li>
@@ -247,8 +247,8 @@ function VisualizacionTab({ explanation }: { explanation: TopicExplanation }) {
   if (explanation.visualizer.type === "none") {
     return (
       <Card className="p-8 text-center">
-        <LineChart size={48} className="mx-auto text-gray-600 mb-4" />
-        <p className="text-gray-400">Este tema no tiene una visualización interactiva disponible.</p>
+        <LineChart size={48} className="mx-auto text-text-muted mb-4" />
+        <p className="text-text-secondary">Este tema no tiene una visualización interactiva disponible.</p>
       </Card>
     );
   }
@@ -256,12 +256,12 @@ function VisualizacionTab({ explanation }: { explanation: TopicExplanation }) {
   return (
     <div className="space-y-4">
       <Card className="p-6">
-        <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+        <h3 className="text-lg font-bold text-text-primary mb-4 flex items-center gap-2">
           <LineChart size={20} className="text-neon-cyan" /> Visualización Interactiva
         </h3>
         <MathVisualizer config={explanation.visualizer} />
       </Card>
-      <p className="text-xs text-gray-500 text-center">
+      <p className="text-xs text-text-muted text-center">
         Interactúa con los controles para explorar el concepto visualmente. Modifica valores y observa cómo cambia el resultado.
       </p>
     </div>
@@ -274,8 +274,8 @@ function AplicacionesTab({ explanation }: { explanation: TopicExplanation }) {
   if (!explanation.applications.length) {
     return (
       <Card className="p-8 text-center">
-        <Globe size={48} className="mx-auto text-gray-600 mb-4" />
-        <p className="text-gray-400">Aplicaciones del mundo real próximamente.</p>
+        <Globe size={48} className="mx-auto text-text-muted mb-4" />
+        <p className="text-text-secondary">Aplicaciones del mundo real próximamente.</p>
       </Card>
     );
   }
@@ -290,12 +290,12 @@ function AplicacionesTab({ explanation }: { explanation: TopicExplanation }) {
               <div className="flex items-center gap-2 mb-1">
                 <Badge color="purple">{app.field}</Badge>
               </div>
-              <h4 className="text-lg font-bold text-white mb-2">{app.title}</h4>
-              <div className="text-gray-400 mb-3 leading-relaxed">
+              <h4 className="text-lg font-bold text-text-primary mb-2">{app.title}</h4>
+              <div className="text-text-secondary mb-3 leading-relaxed">
                 <MathRender content={app.description} />
               </div>
               {app.example_latex && (
-                <div className="bg-gray-900/50 rounded-lg p-3 border border-gray-800">
+                <div className="bg-bg-secondary/50 rounded-lg p-3 border border-text-muted/20">
                   <span className="text-xs text-neon-cyan block mb-1">Ejemplo concreto:</span>
                   <MathRender content={app.example_latex} />
                 </div>
@@ -334,14 +334,14 @@ function PracticaTab({
     <div className="space-y-6">
       {/* Worked examples */}
       <div className="space-y-4">
-        <h3 className="text-lg font-bold text-white flex items-center gap-2">
+        <h3 className="text-lg font-bold text-text-primary flex items-center gap-2">
           <Brain size={20} className="text-neon-cyan" /> Ejemplos Resueltos
         </h3>
         {explanation.worked_examples.map((ex, i) => (
           <Card key={i} className="p-6">
             <h4 className="font-semibold text-neon-cyan mb-3">{ex.title}</h4>
-            <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-800 mb-3">
-              <span className="text-xs text-gray-500 block mb-2">PROBLEMA:</span>
+            <div className="bg-bg-secondary/50 rounded-lg p-4 border border-text-muted/20 mb-3">
+              <span className="text-xs text-text-muted block mb-2">PROBLEMA:</span>
               <MathRender content={ex.problem_latex} />
             </div>
             {!revealedSolutions.has(i) ? (
@@ -356,11 +356,11 @@ function PracticaTab({
               >
                 <div className="bg-neon-green/5 rounded-lg p-4 border border-neon-green/20">
                   <span className="text-xs text-neon-green block mb-2">SOLUCIÓN:</span>
-                  <div className="text-gray-300 leading-relaxed">
+                  <div className="text-text-secondary leading-relaxed">
                     <MathRender content={ex.solution_latex} />
                   </div>
                 </div>
-                <button onClick={() => toggleSolution(i)} className="text-xs text-gray-500 mt-2 hover:text-gray-300 transition">
+                <button onClick={() => toggleSolution(i)} className="text-xs text-text-muted mt-2 hover:text-text-secondary transition">
                   Ocultar solución
                 </button>
               </motion.div>
@@ -372,8 +372,8 @@ function PracticaTab({
       {/* CTA to Arena */}
       <Card glow="green" className="p-8 text-center">
         <Dumbbell size={40} className="mx-auto text-neon-green mb-3" />
-        <h3 className="text-xl font-bold text-white mb-2">¿Listo para practicar?</h3>
-        <p className="text-gray-400 mb-4">Pon a prueba tu conocimiento resolviendo problemas interactivos en la Arena.</p>
+        <h3 className="text-xl font-bold text-text-primary mb-2">¿Listo para practicar?</h3>
+        <p className="text-text-secondary mb-4">Pon a prueba tu conocimiento resolviendo problemas interactivos en la Arena.</p>
         <NeonButton variant="green" onClick={() => router.push(`/arena/${topicId}`)}>
           <Zap size={18} /> Entrar a la Arena
         </NeonButton>

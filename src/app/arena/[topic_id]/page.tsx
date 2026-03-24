@@ -178,7 +178,7 @@ export default function ArenaPage() {
       setState("wrong");
       setShake(true);
       setTimeout(() => setShake(false), 500);
-      setTimeout(() => setState("solving"), 1500);
+      setTimeout(() => setState("solving"), 3000);
     }
   }, [answer, currentProblem, hintsUsed, attempts, addScore, recordExercise, recordDailyProblem, recordReview]);
 
@@ -200,6 +200,7 @@ export default function ArenaPage() {
   }, [currentIndex, problems.length, startPractice]);
 
   const handleSurrender = useCallback(() => {
+    if (!window.confirm("¿Seguro que quieres rendirte? Se mostrará la solución.")) return;
     setState("surrendered");
     setShowSolution(true);
     const pid = currentProblem?.topic_id || topicId;
@@ -476,13 +477,21 @@ export default function ArenaPage() {
       <header className="sticky top-0 z-40 bg-bg-primary/80 backdrop-blur-md border-b border-text-muted/10">
         <div className="max-w-3xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between mb-2">
-            <button
-              onClick={() => setPageMode("config")}
-              className="flex items-center gap-2 text-sm text-text-secondary hover:text-text-primary transition-colors"
-            >
-              <Settings size={16} />
-              <span>Configurar</span>
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => router.push("/dashboard")}
+                className="flex items-center gap-1 text-sm text-text-muted hover:text-text-primary transition-colors"
+              >
+                <ArrowLeft size={16} />
+              </button>
+              <button
+                onClick={() => setPageMode("config")}
+                className="flex items-center gap-2 text-sm text-text-secondary hover:text-text-primary transition-colors"
+              >
+                <Settings size={16} />
+                <span>Configurar</span>
+              </button>
+            </div>
             <div className="flex items-center gap-2">
               {/* Session counter */}
               <Badge color="green">

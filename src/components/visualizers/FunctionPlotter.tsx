@@ -1,5 +1,6 @@
 "use client";
 import { useRef, useEffect, useState, useCallback } from "react";
+import { getCanvasTheme } from "./canvasTheme";
 
 interface Props {
   expression: string;
@@ -72,12 +73,14 @@ export default function FunctionPlotter({
     const toCanvasX = (x: number) => pad + ((x - xMin) / (xMax - xMin)) * (w - 2 * pad);
     const toCanvasY = (y: number) => h - pad - ((y - yMin) / (yMax - yMin)) * (h - 2 * pad);
 
+    const tc = getCanvasTheme();
+
     // Clear
-    ctx.fillStyle = "#0a0a0f";
+    ctx.fillStyle = tc.bg;
     ctx.fillRect(0, 0, w, h);
 
     // Grid
-    ctx.strokeStyle = "#1a1a2f";
+    ctx.strokeStyle = tc.grid;
     ctx.lineWidth = 1;
     for (let i = 0; i <= 10; i++) {
       const gx = pad + (i / 10) * (w - 2 * pad);
@@ -93,7 +96,7 @@ export default function FunctionPlotter({
     }
 
     // Axes
-    ctx.strokeStyle = "#444";
+    ctx.strokeStyle = tc.axis;
     ctx.lineWidth = 1.5;
     // X axis
     if (yMin <= 0 && yMax >= 0) {
@@ -113,7 +116,7 @@ export default function FunctionPlotter({
     }
 
     // Labels
-    ctx.fillStyle = "#888";
+    ctx.fillStyle = tc.label;
     ctx.font = "11px monospace";
     ctx.textAlign = "center";
     for (let i = 0; i <= 5; i++) {
@@ -127,9 +130,9 @@ export default function FunctionPlotter({
     }
 
     // Plot function
-    ctx.strokeStyle = "#00f0ff";
+    ctx.strokeStyle = tc.accent;
     ctx.lineWidth = 2.5;
-    ctx.shadowColor = "#00f0ff";
+    ctx.shadowColor = tc.accent;
     ctx.shadowBlur = 8;
     ctx.beginPath();
     let started = false;
@@ -161,11 +164,11 @@ export default function FunctionPlotter({
       const my = evaluateExpr(activeExpr, mx);
       if (!isNaN(my)) {
         const cy = toCanvasY(my);
-        ctx.fillStyle = "#ff2daa";
+        ctx.fillStyle = tc.accent2;
         ctx.beginPath();
         ctx.arc(mousePos.x, cy, 5, 0, Math.PI * 2);
         ctx.fill();
-        ctx.fillStyle = "#fff";
+        ctx.fillStyle = tc.text;
         ctx.font = "12px monospace";
         ctx.textAlign = "left";
         ctx.fillText(`(${mx.toFixed(2)}, ${my.toFixed(2)})`, mousePos.x + 10, cy - 10);
@@ -191,7 +194,7 @@ export default function FunctionPlotter({
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && setActiveExpr(input)}
-          className="flex-1 bg-gray-900 border border-gray-700 rounded px-3 py-1.5 text-white font-mono text-sm focus:border-neon-cyan outline-none"
+          className="flex-1 bg-bg-secondary border border-text-muted/30 rounded px-3 py-1.5 text-text-primary font-mono text-sm focus:border-neon-cyan outline-none"
           placeholder="ej: x^2, sin(x), exp(-x^2)"
         />
         <button
@@ -205,7 +208,7 @@ export default function FunctionPlotter({
         ref={canvasRef}
         width={width}
         height={height}
-        className="w-full rounded-lg border border-gray-800 cursor-crosshair"
+        className="w-full rounded-lg border border-text-muted/20 cursor-crosshair"
         style={{ maxWidth: width }}
         onMouseMove={handleMouseMove}
         onMouseLeave={() => setMousePos(null)}

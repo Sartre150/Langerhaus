@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { LucideIcon } from "lucide-react";
-import React from "react";
+import React, { useEffect } from "react";
 
 // ─── BUTTON ───
 interface ButtonProps {
@@ -151,6 +151,15 @@ interface ModalProps {
 }
 
 export function Modal({ isOpen = true, onClose, children }: ModalProps) {
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   return (
@@ -159,6 +168,8 @@ export function Modal({ isOpen = true, onClose, children }: ModalProps) {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      role="dialog"
+      aria-modal="true"
     >
       <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" onClick={onClose} />
       <motion.div

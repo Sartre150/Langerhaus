@@ -1,5 +1,6 @@
 "use client";
 import { useRef, useEffect, useState, useCallback } from "react";
+import { getCanvasTheme } from "./canvasTheme";
 
 // Reuse the same safe evaluator
 function evalExpr(expr: string, x: number): number {
@@ -73,11 +74,13 @@ export default function DerivativeVisualizer({
     const toX = (x: number) => pad + ((x - xMin) / (xMax - xMin)) * (w - 2 * pad);
     const toY = (y: number) => h - pad - ((y - yMin) / (yMax - yMin)) * (h - 2 * pad);
 
-    ctx.fillStyle = "#0a0a0f";
+    const tc = getCanvasTheme();
+
+    ctx.fillStyle = tc.bg;
     ctx.fillRect(0, 0, w, h);
 
     // Grid
-    ctx.strokeStyle = "#1a1a2f";
+    ctx.strokeStyle = tc.grid;
     ctx.lineWidth = 1;
     for (let i = 0; i <= 10; i++) {
       const gx = pad + (i / 10) * (w - 2 * pad);
@@ -87,7 +90,7 @@ export default function DerivativeVisualizer({
     }
 
     // Axes
-    ctx.strokeStyle = "#444";
+    ctx.strokeStyle = tc.axis;
     ctx.lineWidth = 1.5;
     if (yMin <= 0 && yMax >= 0) {
       ctx.beginPath(); ctx.moveTo(pad, toY(0)); ctx.lineTo(w - pad, toY(0)); ctx.stroke();
@@ -97,9 +100,9 @@ export default function DerivativeVisualizer({
     }
 
     // Plot function
-    ctx.strokeStyle = "#00f0ff";
+    ctx.strokeStyle = tc.accent;
     ctx.lineWidth = 2.5;
-    ctx.shadowColor = "#00f0ff";
+    ctx.shadowColor = tc.accent;
     ctx.shadowBlur = 6;
     ctx.beginPath();
     let started = false;
@@ -124,9 +127,9 @@ export default function DerivativeVisualizer({
       const y1 = yAtX + slope * (x1 - tangentX);
       const y2 = yAtX + slope * (x2 - tangentX);
 
-      ctx.strokeStyle = "#ff2daa";
+      ctx.strokeStyle = tc.accent2;
       ctx.lineWidth = 2;
-      ctx.shadowColor = "#ff2daa";
+      ctx.shadowColor = tc.accent2;
       ctx.shadowBlur = 8;
       ctx.beginPath();
       ctx.moveTo(toX(x1), toY(y1));
@@ -135,8 +138,8 @@ export default function DerivativeVisualizer({
       ctx.shadowBlur = 0;
 
       // Point
-      ctx.fillStyle = "#00ff88";
-      ctx.shadowColor = "#00ff88";
+      ctx.fillStyle = tc.accent3;
+      ctx.shadowColor = tc.accent3;
       ctx.shadowBlur = 8;
       ctx.beginPath();
       ctx.arc(toX(tangentX), toY(yAtX), 6, 0, Math.PI * 2);
@@ -144,12 +147,12 @@ export default function DerivativeVisualizer({
       ctx.shadowBlur = 0;
 
       // Info
-      ctx.fillStyle = "#fff";
+      ctx.fillStyle = tc.text;
       ctx.font = "13px monospace";
       ctx.textAlign = "left";
       ctx.fillText(`x = ${tangentX.toFixed(2)}`, pad + 5, pad + 15);
       ctx.fillText(`f(x) = ${yAtX.toFixed(3)}`, pad + 5, pad + 32);
-      ctx.fillStyle = "#ff2daa";
+      ctx.fillStyle = tc.accent2;
       ctx.fillText(`f'(x) = ${slope.toFixed(3)}`, pad + 5, pad + 49);
     }
   }, [activeExpr, xMin, xMax, tangentX]);
@@ -165,14 +168,14 @@ export default function DerivativeVisualizer({
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && setActiveExpr(input)}
-          className="flex-1 bg-gray-900 border border-gray-700 rounded px-3 py-1.5 text-white font-mono text-sm focus:border-neon-cyan outline-none"
+          className="flex-1 bg-bg-secondary border border-text-muted/30 rounded px-3 py-1.5 text-text-primary font-mono text-sm focus:border-neon-cyan outline-none"
         />
         <button onClick={() => setActiveExpr(input)} className="px-3 py-1.5 bg-neon-cyan/20 text-neon-cyan border border-neon-cyan/30 rounded text-sm hover:bg-neon-cyan/30 transition">
           Graficar
         </button>
       </div>
       <div className="flex items-center gap-3">
-        <label className="text-sm text-gray-400">Punto tangente:</label>
+        <label className="text-sm text-text-muted">Punto tangente:</label>
         <input
           type="range"
           min={xMin * 100}
@@ -187,10 +190,10 @@ export default function DerivativeVisualizer({
         ref={canvasRef}
         width={600}
         height={400}
-        className="w-full rounded-lg border border-gray-800 cursor-crosshair"
+        className="w-full rounded-lg border border-text-muted/20 cursor-crosshair"
         style={{ maxWidth: 600 }}
       />
-      <div className="text-xs text-gray-500 text-center">
+      <div className="text-xs text-text-muted text-center">
         La línea <span className="text-neon-pink">rosa</span> es la recta tangente. Su pendiente = f&apos;(x).
       </div>
     </div>

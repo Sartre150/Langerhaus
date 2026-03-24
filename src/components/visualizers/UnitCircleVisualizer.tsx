@@ -1,5 +1,6 @@
 "use client";
 import { useRef, useEffect, useState, useCallback } from "react";
+import { getCanvasTheme } from "./canvasTheme";
 
 export default function UnitCircleVisualizer() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -17,11 +18,13 @@ export default function UnitCircleVisualizer() {
     const cy = h / 2;
     const r = Math.min(w, h) / 2 - 60;
 
-    ctx.fillStyle = "#0a0a0f";
+    const tc = getCanvasTheme();
+
+    ctx.fillStyle = tc.bg;
     ctx.fillRect(0, 0, w, h);
 
     // Grid
-    ctx.strokeStyle = "#1a1a2f";
+    ctx.strokeStyle = tc.grid;
     ctx.lineWidth = 1;
     for (let i = -1; i <= 1; i += 0.5) {
       ctx.beginPath();
@@ -35,7 +38,7 @@ export default function UnitCircleVisualizer() {
     }
 
     // Axes
-    ctx.strokeStyle = "#555";
+    ctx.strokeStyle = tc.axis;
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.moveTo(cx - r - 30, cy);
@@ -47,7 +50,7 @@ export default function UnitCircleVisualizer() {
     ctx.stroke();
 
     // Circle
-    ctx.strokeStyle = "#444";
+    ctx.strokeStyle = tc.axis;
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.arc(cx, cy, r, 0, Math.PI * 2);
@@ -55,7 +58,7 @@ export default function UnitCircleVisualizer() {
 
     // Angle arc
     const rad = (angle * Math.PI) / 180;
-    ctx.strokeStyle = "#b24bff";
+    ctx.strokeStyle = tc.accent4;
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.arc(cx, cy, 30, 0, -rad, rad > 0);
@@ -64,7 +67,7 @@ export default function UnitCircleVisualizer() {
     // Radius line
     const px = cx + r * Math.cos(rad);
     const py = cy - r * Math.sin(rad);
-    ctx.strokeStyle = "#fff";
+    ctx.strokeStyle = tc.text;
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(cx, cy);
@@ -72,8 +75,8 @@ export default function UnitCircleVisualizer() {
     ctx.stroke();
 
     // Point on circle
-    ctx.fillStyle = "#ff2daa";
-    ctx.shadowColor = "#ff2daa";
+    ctx.fillStyle = tc.accent2;
+    ctx.shadowColor = tc.accent2;
     ctx.shadowBlur = 10;
     ctx.beginPath();
     ctx.arc(px, py, 6, 0, Math.PI * 2);
@@ -81,8 +84,7 @@ export default function UnitCircleVisualizer() {
     ctx.shadowBlur = 0;
 
     // cos line (horizontal projection)
-    ctx.strokeStyle = "#00f0ff";
-    ctx.lineWidth = 3;
+    ctx.strokeStyle = tc.accent;
     ctx.setLineDash([5, 3]);
     ctx.beginPath();
     ctx.moveTo(cx, cy);
@@ -91,7 +93,7 @@ export default function UnitCircleVisualizer() {
     ctx.setLineDash([]);
 
     // sin line (vertical projection)
-    ctx.strokeStyle = "#00ff88";
+    ctx.strokeStyle = tc.accent3;
     ctx.lineWidth = 3;
     ctx.setLineDash([5, 3]);
     ctx.beginPath();
@@ -104,21 +106,21 @@ export default function UnitCircleVisualizer() {
     ctx.font = "bold 14px monospace";
     ctx.textAlign = "center";
 
-    ctx.fillStyle = "#00f0ff";
+    ctx.fillStyle = tc.accent;
     ctx.fillText(`cos = ${Math.cos(rad).toFixed(3)}`, (cx + px) / 2, cy + 20);
 
-    ctx.fillStyle = "#00ff88";
+    ctx.fillStyle = tc.accent3;
     ctx.fillText(`sin = ${Math.sin(rad).toFixed(3)}`, px + 55, (cy + py) / 2);
 
     const tanVal = Math.cos(rad) !== 0 ? Math.tan(rad) : Infinity;
-    ctx.fillStyle = "#b24bff";
+    ctx.fillStyle = tc.accent4;
     ctx.fillText(`tan = ${isFinite(tanVal) ? tanVal.toFixed(3) : "∞"}`, cx, cy + r + 45);
 
-    ctx.fillStyle = "#ff2daa";
+    ctx.fillStyle = tc.accent2;
     ctx.fillText(`θ = ${angle}° = ${(rad).toFixed(3)} rad`, cx, cy - r - 15);
 
     // Axis labels
-    ctx.fillStyle = "#666";
+    ctx.fillStyle = tc.label;
     ctx.font = "12px monospace";
     ctx.fillText("0", cx + r + 15, cy + 15);
     ctx.fillText("π/2", cx + 10, cy - r - 5);
@@ -131,7 +133,7 @@ export default function UnitCircleVisualizer() {
       const arad = (a * Math.PI) / 180;
       const dx = cx + (r + 5) * Math.cos(arad);
       const dy = cy - (r + 5) * Math.sin(arad);
-      ctx.fillStyle = a === angle ? "#ff2daa" : "#333";
+      ctx.fillStyle = a === angle ? tc.accent2 : tc.grid;
       ctx.beginPath();
       ctx.arc(dx, dy, 3, 0, Math.PI * 2);
       ctx.fill();
@@ -145,7 +147,7 @@ export default function UnitCircleVisualizer() {
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-4 justify-center">
-        <label className="text-sm text-gray-400">Ángulo:</label>
+        <label className="text-sm text-text-muted">Ángulo:</label>
         <input
           type="range"
           min={0}
@@ -164,7 +166,7 @@ export default function UnitCircleVisualizer() {
             className={`px-2 py-1 text-xs rounded border transition ${
               angle === a % 360
                 ? "bg-neon-pink/20 border-neon-pink text-neon-pink"
-                : "border-gray-700 text-gray-400 hover:border-gray-500"
+                : "border-text-muted/30 text-text-muted hover:border-text-muted/60"
             }`}
           >
             {a}°
@@ -175,7 +177,7 @@ export default function UnitCircleVisualizer() {
         ref={canvasRef}
         width={500}
         height={500}
-        className="w-full rounded-lg border border-gray-800"
+        className="w-full rounded-lg border border-text-muted/20"
         style={{ maxWidth: 500, margin: "0 auto", display: "block" }}
       />
     </div>

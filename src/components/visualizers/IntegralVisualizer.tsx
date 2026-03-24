@@ -1,5 +1,6 @@
 "use client";
 import { useRef, useEffect, useState, useCallback } from "react";
+import { getCanvasTheme } from "./canvasTheme";
 
 function evalExpr(expr: string, x: number): number {
   const s = expr
@@ -82,11 +83,13 @@ export default function IntegralVisualizer({
     const toX = (x: number) => pad + ((x - xMin) / (xMax - xMin)) * (w - 2 * pad);
     const toY = (y: number) => h - pad - ((y - yMin) / (yMax - yMin)) * (h - 2 * pad);
 
-    ctx.fillStyle = "#0a0a0f";
+    const tc = getCanvasTheme();
+
+    ctx.fillStyle = tc.bg;
     ctx.fillRect(0, 0, w, h);
 
     // Grid
-    ctx.strokeStyle = "#1a1a2f";
+    ctx.strokeStyle = tc.grid;
     for (let i = 0; i <= 10; i++) {
       const gx = pad + (i / 10) * (w - 2 * pad);
       ctx.beginPath(); ctx.moveTo(gx, pad); ctx.lineTo(gx, h - pad); ctx.stroke();
@@ -95,7 +98,7 @@ export default function IntegralVisualizer({
     }
 
     // Axes
-    ctx.strokeStyle = "#444";
+    ctx.strokeStyle = tc.axis;
     ctx.lineWidth = 1.5;
     if (yMin <= 0 && yMax >= 0) {
       ctx.beginPath(); ctx.moveTo(pad, toY(0)); ctx.lineTo(w - pad, toY(0)); ctx.stroke();
@@ -107,8 +110,8 @@ export default function IntegralVisualizer({
     // Shaded area
     const aReal = Math.min(a, b);
     const bReal = Math.max(a, b);
-    ctx.fillStyle = "rgba(0, 255, 136, 0.2)";
-    ctx.strokeStyle = "rgba(0, 255, 136, 0.5)";
+    ctx.fillStyle = tc.accent3 + "33";
+    ctx.strokeStyle = tc.accent3 + "80";
     ctx.beginPath();
     ctx.moveTo(toX(aReal), toY(0));
     for (let x = aReal; x <= bReal; x += (bReal - aReal) / 200) {
@@ -121,7 +124,7 @@ export default function IntegralVisualizer({
     ctx.stroke();
 
     // Boundary lines
-    ctx.strokeStyle = "#00ff88";
+    ctx.strokeStyle = tc.accent3;
     ctx.lineWidth = 1.5;
     ctx.setLineDash([4, 4]);
     [aReal, bReal].forEach((bx) => {
@@ -133,9 +136,9 @@ export default function IntegralVisualizer({
     ctx.setLineDash([]);
 
     // Plot function
-    ctx.strokeStyle = "#00f0ff";
+    ctx.strokeStyle = tc.accent;
     ctx.lineWidth = 2.5;
-    ctx.shadowColor = "#00f0ff";
+    ctx.shadowColor = tc.accent;
     ctx.shadowBlur = 6;
     ctx.beginPath();
     let started = false;
@@ -151,7 +154,7 @@ export default function IntegralVisualizer({
     ctx.shadowBlur = 0;
 
     // Labels
-    ctx.fillStyle = "#00ff88";
+    ctx.fillStyle = tc.accent3;
     ctx.font = "bold 12px monospace";
     ctx.textAlign = "center";
     ctx.fillText(`a = ${a.toFixed(1)}`, toX(a), toY(0) + 15);
@@ -159,7 +162,7 @@ export default function IntegralVisualizer({
 
     // Integral value
     const integral = integrate(activeExpr, a, b);
-    ctx.fillStyle = "#fff";
+    ctx.fillStyle = tc.text;
     ctx.font = "bold 16px monospace";
     ctx.fillText(`∫ f(x)dx ≈ ${integral.toFixed(4)}`, w / 2, pad + 20);
   }, [activeExpr, xMin, xMax, a, b, integrate]);
@@ -175,27 +178,27 @@ export default function IntegralVisualizer({
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && setActiveExpr(input)}
-          className="flex-1 bg-gray-900 border border-gray-700 rounded px-3 py-1.5 text-white font-mono text-sm focus:border-neon-cyan outline-none"
+          className="flex-1 bg-bg-secondary border border-text-muted/30 rounded px-3 py-1.5 text-text-primary font-mono text-sm focus:border-neon-cyan outline-none"
         />
         <button onClick={() => setActiveExpr(input)} className="px-3 py-1.5 bg-neon-cyan/20 text-neon-cyan border border-neon-cyan/30 rounded text-sm hover:bg-neon-cyan/30 transition">OK</button>
       </div>
       <div className="flex gap-6">
         <div className="flex items-center gap-2 flex-1">
-          <label className="text-sm text-gray-400">a:</label>
+          <label className="text-sm text-text-muted">a:</label>
           <input type="range" min={xMin * 10} max={xMax * 10} value={a * 10}
             onChange={(e) => setA(Number(e.target.value) / 10)} className="flex-1 accent-neon-green" />
           <span className="text-neon-green font-mono w-12">{a.toFixed(1)}</span>
         </div>
         <div className="flex items-center gap-2 flex-1">
-          <label className="text-sm text-gray-400">b:</label>
+          <label className="text-sm text-text-muted">b:</label>
           <input type="range" min={xMin * 10} max={xMax * 10} value={b * 10}
             onChange={(e) => setB(Number(e.target.value) / 10)} className="flex-1 accent-neon-green" />
           <span className="text-neon-green font-mono w-12">{b.toFixed(1)}</span>
         </div>
       </div>
       <canvas ref={canvasRef} width={600} height={400}
-        className="w-full rounded-lg border border-gray-800" style={{ maxWidth: 600 }} />
-      <div className="text-xs text-gray-500 text-center">
+        className="w-full rounded-lg border border-text-muted/20" style={{ maxWidth: 600 }} />
+      <div className="text-xs text-text-muted text-center">
         El área <span className="text-neon-green">verde</span> representa $\int_a^b f(x)\,dx$.
       </div>
     </div>

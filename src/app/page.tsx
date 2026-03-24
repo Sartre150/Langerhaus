@@ -19,8 +19,10 @@ export default function Home() {
   }, [user, loading, router]);
 
   return (
-    <div className="min-h-screen bg-bg-primary flex items-center justify-center">
+    <div className="min-h-screen bg-bg-primary flex flex-col items-center justify-center gap-4">
+      <h1 className="text-2xl font-bold text-text-primary tracking-tight">Langerhaus</h1>
       <div className="w-8 h-8 border-2 border-neon-cyan/20 border-t-neon-cyan rounded-full animate-spin" />
+      <p className="text-sm text-text-muted">Cargando...</p>
     </div>
   );
 }

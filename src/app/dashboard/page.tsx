@@ -452,7 +452,7 @@ export default function DashboardPage() {
       <AnimatePresence>
         {showThemePicker && (
           <Modal onClose={() => setShowThemePicker(false)}>
-            <ThemePicker onClose={() => setShowThemePicker(false)} />
+            <ThemePicker />
           </Modal>
         )}
       </AnimatePresence>
