@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Brain, Flame, Target, Trophy, RotateCcw, LogOut, User, AlertTriangle,
   Palette, CalendarDays, Zap, BookOpen, AlertCircle, ChevronRight,
-  TrendingDown,
+  TrendingDown, BookMarked,
 } from "lucide-react";
 import SkillTree from "@/components/SkillTree";
 import { TopicWithProgress } from "@/lib/types";
@@ -84,21 +84,21 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-bg-primary bg-grid">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-bg-primary/80 backdrop-blur-md border-b border-text-muted/10">
+      <header className="sticky top-0 z-40 bg-bg-primary/90 backdrop-blur-md border-b border-text-muted/8">
         <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-neon-cyan to-neon-purple flex items-center justify-center">
-              <Brain size={22} className="text-bg-primary" />
+            <div className="w-10 h-10 rounded-2xl bg-neon-cyan/15 flex items-center justify-center">
+              <BookMarked size={22} className="text-neon-cyan" />
             </div>
             <div>
               <h1 className="text-lg font-bold text-text-primary tracking-tight">
-                Langer<span className="neon-text-cyan">haus</span>
+                Langerhaus
               </h1>
               <p className="text-xs text-text-muted">Cuaderno de arena y cálculo</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <div className="hidden sm:flex items-center gap-2 mr-2 px-3 py-1.5 rounded-lg bg-bg-secondary border border-text-muted/10">
+            <div className="hidden sm:flex items-center gap-2 mr-2 px-3 py-1.5 rounded-xl bg-bg-secondary border border-text-muted/10">
               <User size={14} className="text-neon-purple" />
               <span className="text-xs text-text-secondary font-medium">{userName}</span>
             </div>
@@ -337,7 +337,7 @@ export default function DashboardPage() {
                         <div className="w-12 h-1.5 rounded-full bg-bg-primary overflow-hidden">
                           <div
                             className={`h-full rounded-full transition-all ${
-                              w.accuracy < 40 ? "bg-red-400" : w.accuracy < 60 ? "bg-neon-orange" : "bg-neon-yellow"
+                              w.accuracy < 40 ? "bg-red-400" : w.accuracy < 60 ? "bg-neon-orange" : "bg-neon-cyan"
                             }`}
                             style={{ width: `${w.accuracy}%` }}
                           />
@@ -390,7 +390,7 @@ export default function DashboardPage() {
           transition={{ delay: 0.2 }}
         >
           <div className="flex items-center gap-2 mb-6">
-            <h2 className="text-xl font-bold text-text-primary">Árbol de Habilidades</h2>
+            <h2 className="text-xl font-bold text-text-primary">Tu camino</h2>
             <span className="text-xs text-text-muted bg-bg-secondary px-2 py-1 rounded-full">
               {topics.length} niveles
             </span>

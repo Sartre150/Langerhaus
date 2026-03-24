@@ -11,17 +11,17 @@ interface SkillTreeProps {
 }
 
 const levelLabels: Record<number, { title: string; subtitle: string }> = {
-  0: { title: "ARITMÉTICA", subtitle: "Fundamentos Absolutos" },
-  1: { title: "PRE-ÁLGEBRA", subtitle: "El Puente" },
-  2: { title: "ÁLGEBRA I", subtitle: "Ecuaciones & Factorización" },
-  3: { title: "ÁLGEBRA II", subtitle: "Funciones & Logaritmos" },
-  4: { title: "TRIGONOMETRÍA", subtitle: "Geometría Analítica" },
-  5: { title: "CÁLCULO DIFERENCIAL", subtitle: "Límites & Derivadas" },
-  6: { title: "CÁLCULO INTEGRAL", subtitle: "Integrales & Series" },
-  7: { title: "CÁLCULO MULTI", subtitle: "Varias Variables" },
-  8: { title: "ÁLGEBRA LINEAL", subtitle: "Vectores & Matrices" },
-  9: { title: "EC. DIFERENCIALES", subtitle: "EDOs & Laplace" },
-  10: { title: "DATA SCIENCE", subtitle: "Probabilidad & ML" },
+  0: { title: "Aritmética", subtitle: "Los fundamentos de todo" },
+  1: { title: "Pre-Álgebra", subtitle: "Construyendo el puente" },
+  2: { title: "Álgebra I", subtitle: "Ecuaciones y factorización" },
+  3: { title: "Álgebra II", subtitle: "Funciones y logaritmos" },
+  4: { title: "Trigonometría", subtitle: "El lenguaje de los ángulos" },
+  5: { title: "Cálculo Diferencial", subtitle: "El arte del cambio" },
+  6: { title: "Cálculo Integral", subtitle: "Sumando infinitos" },
+  7: { title: "Cálculo Multivariable", subtitle: "Más allá de una dimensión" },
+  8: { title: "Álgebra Lineal", subtitle: "Vectores y transformaciones" },
+  9: { title: "Ec. Diferenciales", subtitle: "El movimiento hecho ecuación" },
+  10: { title: "Probabilidad & Datos", subtitle: "Entendiendo la incertidumbre" },
 };
 
 export default function SkillTree({ topics }: SkillTreeProps) {
@@ -36,7 +36,7 @@ export default function SkillTree({ topics }: SkillTreeProps) {
   return (
     <div className="relative">
       {/* Vertical connecting line */}
-      <div className="absolute left-6 top-0 bottom-0 w-px bg-gradient-to-b from-neon-cyan/30 via-neon-purple/30 to-neon-cyan/10 hidden lg:block" />
+      <div className="absolute left-6 top-0 bottom-0 w-px bg-gradient-to-b from-neon-cyan/20 via-neon-purple/15 to-neon-cyan/5 hidden lg:block" />
 
       <div className="space-y-8">
         {topics.map((mainTopic, i) => {
@@ -54,7 +54,7 @@ export default function SkillTree({ topics }: SkillTreeProps) {
               <div className="flex items-center gap-4 mb-4">
                 <div
                   className={`
-                    relative z-10 flex-shrink-0 w-12 h-12 rounded-full border-2 flex items-center justify-center
+                    relative z-10 flex-shrink-0 w-12 h-12 rounded-2xl border-2 flex items-center justify-center
                     font-mono text-xs font-bold
                     ${
                       isLocked
@@ -67,7 +67,7 @@ export default function SkillTree({ topics }: SkillTreeProps) {
                     }
                   `}
                 >
-                  L{mainTopic.level}
+                  {mainTopic.level + 1}
                 </div>
                 <div>
                   <h2

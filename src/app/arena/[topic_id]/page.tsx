@@ -45,7 +45,7 @@ type PageMode = "config" | "practice";
 // ── Calculator policy display helpers ──
 const CALC_POLICY_META: Record<CalculatorPolicy, { icon: typeof Brain; label: string; color: string; description: string }> = {
   mental: { icon: Brain, label: "Cálculo Mental", color: "text-neon-green", description: "Resuelve sin calculadora — fortalece tu base" },
-  optional: { icon: Zap, label: "Opcional", color: "text-yellow-400", description: "Intenta mentalmente, usa calculadora si necesitas" },
+  optional: { icon: Zap, label: "Opcional", color: "text-neon-orange", description: "Intenta mentalmente, usa calculadora si necesitas" },
   calculator: { icon: Calculator, label: "Calculadora", color: "text-neon-cyan", description: "Usa calculadora — enfócate en el concepto" },
 };
 

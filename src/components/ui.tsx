@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { LucideIcon } from "lucide-react";
 import React from "react";
 
-// ─── NEON BUTTON ───
+// ─── BUTTON ───
 interface ButtonProps {
   variant?: "cyan" | "purple" | "green" | "ghost" | "danger";
   size?: "sm" | "md" | "lg";
@@ -17,11 +17,11 @@ interface ButtonProps {
 }
 
 const variantStyles = {
-  cyan: "bg-neon-cyan/10 border-neon-cyan/40 text-neon-cyan hover:bg-neon-cyan/20 hover:shadow-neon-cyan",
-  purple: "bg-neon-purple/10 border-neon-purple/40 text-neon-purple hover:bg-neon-purple/20 hover:shadow-neon-purple",
-  green: "bg-neon-green/10 border-neon-green/40 text-neon-green hover:bg-neon-green/20 hover:shadow-neon-green",
-  ghost: "bg-transparent border-text-muted/30 text-text-secondary hover:bg-bg-hover hover:text-text-primary",
-  danger: "bg-red-500/10 border-red-500/40 text-red-400 hover:bg-red-500/20",
+  cyan: "bg-neon-cyan/10 border-neon-cyan/30 text-neon-cyan hover:bg-neon-cyan/15 hover:shadow-soft",
+  purple: "bg-neon-purple/10 border-neon-purple/30 text-neon-purple hover:bg-neon-purple/15 hover:shadow-soft",
+  green: "bg-neon-green/10 border-neon-green/30 text-neon-green hover:bg-neon-green/15 hover:shadow-soft",
+  ghost: "bg-transparent border-text-muted/20 text-text-secondary hover:bg-bg-hover hover:text-text-primary",
+  danger: "bg-red-500/10 border-red-500/30 text-red-500 hover:bg-red-500/15",
 };
 
 const sizeStyles = {
@@ -42,10 +42,10 @@ export function NeonButton({
 }: ButtonProps) {
   return (
     <motion.button
-      whileHover={{ scale: disabled ? 1 : 1.02 }}
+      whileHover={{ scale: disabled ? 1 : 1.01 }}
       whileTap={{ scale: disabled ? 1 : 0.98 }}
       className={`
-        inline-flex items-center justify-center gap-2 rounded-lg border font-medium
+        inline-flex items-center justify-center gap-2 rounded-xl border font-semibold
         transition-all duration-200 cursor-pointer
         disabled:opacity-40 disabled:cursor-not-allowed
         ${variantStyles[variant]} ${sizeStyles[size]} ${className}
@@ -72,17 +72,17 @@ export function Card({ children, className = "", glow = "none", onClick }: CardP
   const glowStyles = {
     cyan: "neon-border-cyan",
     purple: "neon-border-purple",
-    green: "border border-neon-green/30 shadow-neon-green",
-    none: "border border-text-muted/10",
+    green: "border border-neon-green/25 shadow-soft",
+    none: "border border-text-muted/10 shadow-soft",
   };
 
   return (
     <div
       onClick={onClick}
       className={`
-        rounded-xl bg-bg-card p-6 backdrop-blur-sm
+        rounded-2xl bg-bg-card p-6
         transition-all duration-300
-        ${onClick ? "cursor-pointer hover:bg-bg-hover" : ""}
+        ${onClick ? "cursor-pointer hover:shadow-card hover:bg-bg-hover" : ""}
         ${glowStyles[glow]} ${className}
       `}
     >
@@ -160,12 +160,12 @@ export function Modal({ isOpen = true, onClose, children }: ModalProps) {
       exit={{ opacity: 0 }}
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
     >
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" onClick={onClose} />
       <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
+        initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.9, opacity: 0 }}
-        transition={{ type: "spring", damping: 25, stiffness: 300 }}
+        exit={{ scale: 0.95, opacity: 0 }}
+        transition={{ type: "spring", damping: 30, stiffness: 350 }}
         className="relative z-10 w-full max-w-lg"
       >
         <Card glow="purple" className="!p-0 overflow-hidden">

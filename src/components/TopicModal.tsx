@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Swords, Trophy, X, BookOpen, BarChart3 } from "lucide-react";
+import { PenLine, Trophy, X, BookOpen, BarChart3 } from "lucide-react";
 import { TopicWithProgress } from "@/lib/types";
 import { NeonButton, ProgressBar, Badge } from "./ui";
 import { Modal } from "./ui";
@@ -44,7 +44,7 @@ export default function TopicModal({ topic, isOpen, onClose }: TopicModalProps) 
               {isMastered ? (
                 <Trophy size={24} className="text-neon-green" />
               ) : (
-                <Swords size={24} className="text-neon-purple" />
+                <PenLine size={24} className="text-neon-purple" />
               )}
             </div>
             <div>
@@ -165,7 +165,7 @@ export default function TopicModal({ topic, isOpen, onClose }: TopicModalProps) 
           <NeonButton
             variant="cyan"
             size="md"
-            icon={Swords}
+            icon={PenLine}
             onClick={() => {
               onClose();
               // Navigate to arena with the parent topic (config page will show subtopics)

@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Check, Sparkles } from "lucide-react";
+import { Check, Palette } from "lucide-react";
 import { themes, useTheme, ThemeId } from "@/lib/ThemeContext";
 
 interface ThemePickerProps {
@@ -11,12 +11,8 @@ interface ThemePickerProps {
 export default function ThemePicker({ onClose }: ThemePickerProps) {
   const { theme, setTheme } = useTheme();
 
-  const vibrantThemes = themes.filter((t) =>
-    ["cyberpunk", "solarpunk", "neobrutal", "bauhaus", "midnight", "retrowave"].includes(t.id)
-  );
-  const calmThemes = themes.filter((t) =>
-    ["dark-academia", "nordic", "obsidian", "forest", "ink", "ember"].includes(t.id)
-  );
+  const lightThemes = themes.filter((t) => ["cuaderno", "domingo"].includes(t.id));
+  const darkThemes = themes.filter((t) => ["atardecer", "biblioteca", "pizarron", "cosmos"].includes(t.id));
 
   const renderCard = (t: (typeof themes)[0]) => {
     const isActive = theme === t.id;
@@ -29,10 +25,10 @@ export default function ThemePicker({ onClose }: ThemePickerProps) {
           setTheme(t.id as ThemeId);
           setTimeout(onClose, 300);
         }}
-        className={`relative rounded-xl p-3 text-left transition-all border-2 ${
+        className={`relative rounded-2xl p-3.5 text-left transition-all border-2 ${
           isActive
-            ? "border-neon-cyan ring-2 ring-neon-cyan/20"
-            : "border-text-muted/20 hover:border-text-muted/40"
+            ? "border-neon-cyan ring-2 ring-neon-cyan/15"
+            : "border-text-muted/15 hover:border-text-muted/30"
         }`}
         style={{ background: t.preview.bg }}
       >
@@ -55,24 +51,24 @@ export default function ThemePicker({ onClose }: ThemePickerProps) {
 
   return (
     <div className="max-h-[70vh] overflow-y-auto pr-1">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 rounded-xl bg-neon-purple/20 flex items-center justify-center">
-          <Sparkles size={20} className="text-neon-purple" />
+      <div className="flex items-center gap-3 mb-5">
+        <div className="w-10 h-10 rounded-2xl bg-neon-cyan/10 flex items-center justify-center">
+          <Palette size={20} className="text-neon-cyan" />
         </div>
         <div>
-          <h3 className="text-lg font-bold text-text-primary">Estética Visual</h3>
-          <p className="text-xs text-text-secondary">Elige tu estilo favorito</p>
+          <h3 className="text-lg font-bold text-text-primary">Ambiente</h3>
+          <p className="text-xs text-text-secondary">Elige cómo se siente tu cuaderno</p>
         </div>
       </div>
 
-      <p className="text-[10px] uppercase tracking-widest text-text-muted font-semibold mb-2">Vibrantes</p>
+      <p className="text-[10px] uppercase tracking-widest text-text-muted font-semibold mb-2">Claros</p>
       <div className="grid grid-cols-2 gap-2.5 mb-4">
-        {vibrantThemes.map(renderCard)}
+        {lightThemes.map(renderCard)}
       </div>
 
-      <p className="text-[10px] uppercase tracking-widest text-text-muted font-semibold mb-2">Sobrias</p>
+      <p className="text-[10px] uppercase tracking-widest text-text-muted font-semibold mb-2">Oscuros</p>
       <div className="grid grid-cols-2 gap-2.5">
-        {calmThemes.map(renderCard)}
+        {darkThemes.map(renderCard)}
       </div>
     </div>
   );

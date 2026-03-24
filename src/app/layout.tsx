@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Nunito } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 import { AuthProvider } from "@/lib/AuthContext";
@@ -6,11 +7,12 @@ import { ProgressProvider } from "@/lib/ProgressContext";
 import { ThemeProvider } from "@/lib/ThemeContext";
 import { StudyProvider } from "@/lib/StudyContext";
 
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
+const nunito = Nunito({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-nunito",
 });
+
 const geistMono = localFont({
   src: "./fonts/GeistMonoVF.woff",
   variable: "--font-geist-mono",
@@ -38,7 +40,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-bg-primary text-text-primary`}
+        className={`${nunito.variable} ${geistMono.variable} antialiased bg-bg-primary text-text-primary font-sans`}
       >
         <ThemeProvider>
           <AuthProvider>

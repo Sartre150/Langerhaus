@@ -3,8 +3,7 @@
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
 
 export type ThemeId =
-  | "cyberpunk" | "solarpunk" | "neobrutal" | "bauhaus" | "midnight" | "retrowave"
-  | "dark-academia" | "nordic" | "obsidian" | "forest" | "ink" | "ember";
+  | "cuaderno" | "atardecer" | "pizarron" | "domingo" | "biblioteca" | "cosmos";
 
 export interface ThemeInfo {
   id: ThemeId;
@@ -15,77 +14,40 @@ export interface ThemeInfo {
 
 export const themes: ThemeInfo[] = [
   {
-    id: "cyberpunk",
-    name: "Cyberpunk",
-    description: "Neón futurista con tonos oscuros y brillos eléctricos",
-    preview: { bg: "#0a0a0f", accent: "#00f0ff", accent2: "#b24bff", text: "#e8e8f0" },
+    id: "cuaderno",
+    name: "Cuaderno",
+    description: "Crema cálida, como un cuaderno recién abierto bajo la luz de la mañana",
+    preview: { bg: "#faf7f2", accent: "#b87a3d", accent2: "#6b8e6b", text: "#2d2418" },
   },
   {
-    id: "solarpunk",
-    name: "Solarpunk",
-    description: "Naturaleza digital con verdes orgánicos y esperanza",
-    preview: { bg: "#0f1a12", accent: "#4ade80", accent2: "#a78bfa", text: "#e8f5e9" },
+    id: "domingo",
+    name: "Domingo",
+    description: "Tarde soleada, coca-cola en la mesa, poca prisa — inspirado en Temporada de Patos",
+    preview: { bg: "#fdf8ee", accent: "#b07830", accent2: "#788aa0", text: "#3a3028" },
   },
   {
-    id: "neobrutal",
-    name: "Neobrutalismo",
-    description: "Diseño crudo con bordes gruesos y colores planos",
-    preview: { bg: "#fffbe6", accent: "#000000", accent2: "#6d28d9", text: "#1a1a1a" },
+    id: "atardecer",
+    name: "Atardecer",
+    description: "Hora dorada sobre un campo de maíz, la luz entra por la ventana",
+    preview: { bg: "#1c1610", accent: "#e0a050", accent2: "#8aaa7a", text: "#e8dcc8" },
   },
   {
-    id: "bauhaus",
-    name: "Bauhaus",
-    description: "Geométrico y funcional, inspirado en la escuela clásica",
-    preview: { bg: "#f5f0e8", accent: "#1a56db", accent2: "#dc2626", text: "#111827" },
+    id: "biblioteca",
+    name: "Biblioteca",
+    description: "Madera, cuero y una lámpara encendida entre estantes de libros",
+    preview: { bg: "#1e1a14", accent: "#c9a96e", accent2: "#8b7a5a", text: "#e8dcc8" },
   },
   {
-    id: "midnight",
-    name: "Midnight",
-    description: "Violetas profundos y azules etéreos del cielo nocturno",
-    preview: { bg: "#0c0a1d", accent: "#818cf8", accent2: "#c084fc", text: "#eef2ff" },
+    id: "pizarron",
+    name: "Pizarrón",
+    description: "Tiza, borrador y polvo de gis — la magia del salón de clases",
+    preview: { bg: "#1a2a20", accent: "#e8e0c8", accent2: "#d4c478", text: "#e0d8c4" },
   },
   {
-    id: "retrowave",
-    name: "Retrowave",
-    description: "Sintetizadores, puestas de sol y nostalgia de los 80s",
-    preview: { bg: "#1a0828", accent: "#ff6ec7", accent2: "#7b2dff", text: "#ffe4f1" },
-  },
-  // ── Calm / Sober ──
-  {
-    id: "dark-academia",
-    name: "Dark Academia",
-    description: "Bibliotecas antiguas, sepia y conocimiento en penumbra",
-    preview: { bg: "#1c1814", accent: "#c9a96e", accent2: "#8b6f47", text: "#e8dcc8" },
-  },
-  {
-    id: "nordic",
-    name: "Nordic",
-    description: "Minimalismo escandinavo, grises fríos y calma invernal",
-    preview: { bg: "#1a1e24", accent: "#88b4c8", accent2: "#7e9aaf", text: "#d8dee8" },
-  },
-  {
-    id: "obsidian",
-    name: "Obsidian",
-    description: "Negro absoluto con acentos plateados, puro y silencioso",
-    preview: { bg: "#0d0d0d", accent: "#a0a0a0", accent2: "#787878", text: "#e0e0e0" },
-  },
-  {
-    id: "forest",
-    name: "Forest",
-    description: "Verdes apagados y tierra húmeda, como un bosque de noche",
-    preview: { bg: "#141a14", accent: "#6b8f6b", accent2: "#7a6e5a", text: "#c8d4c0" },
-  },
-  {
-    id: "ink",
-    name: "Ink",
-    description: "Azul marino profundo y tiza blanca, como un cuaderno antiguo",
-    preview: { bg: "#101828", accent: "#94a8c8", accent2: "#7888a8", text: "#d0d8e8" },
-  },
-  {
-    id: "ember",
-    name: "Ember",
-    description: "Carbón y brasas, terracota suave sobre oscuridad cálida",
-    preview: { bg: "#181210", accent: "#c08050", accent2: "#8a6040", text: "#e0d0c0" },
+    id: "cosmos",
+    name: "Cosmos",
+    description: "El amor es la única fuerza que trasciende el tiempo — inspirado en Interstellar",
+    preview: { bg: "#101824", accent: "#d0a050", accent2: "#7090b0", text: "#d8dce4" },
   },
 ];
 
@@ -97,12 +59,12 @@ interface ThemeContextType {
 }
 
 const ThemeContext = createContext<ThemeContextType>({
-  theme: "cyberpunk",
+  theme: "cuaderno",
   setTheme: () => {},
 });
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<ThemeId>("cyberpunk");
+  const [theme, setThemeState] = useState<ThemeId>("cuaderno");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {

@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Lock, Sparkles, ChevronRight, Zap } from "lucide-react";
+import { Lock, Star, ChevronRight, BookOpen } from "lucide-react";
 import { TopicWithProgress } from "@/lib/types";
 import { Badge, ProgressBar } from "./ui";
 
@@ -51,12 +51,12 @@ export default function SkillNode({ topic, onClick, index }: SkillNodeProps) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: -30 }}
+      initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: index * 0.05, duration: 0.4 }}
       onClick={() => !isLocked && onClick(topic)}
       className={`
-        relative rounded-xl border p-4 transition-all duration-300
+        relative rounded-2xl border p-4 transition-all duration-300
         ${borderClass} ${bgClass}
         ${!isLocked ? "cursor-pointer group" : "cursor-not-allowed opacity-60"}
       `}
@@ -80,9 +80,9 @@ export default function SkillNode({ topic, onClick, index }: SkillNodeProps) {
           {isLocked ? (
             <Lock size={16} />
           ) : isMastered ? (
-            <Sparkles size={16} />
+            <Star size={16} />
           ) : (
-            <Zap size={16} />
+            <BookOpen size={16} />
           )}
         </div>
 

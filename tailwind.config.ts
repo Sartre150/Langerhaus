@@ -9,6 +9,10 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['var(--font-nunito)', 'Nunito', 'system-ui', '-apple-system', 'sans-serif'],
+        mono: ['var(--font-geist-mono)', 'ui-monospace', 'monospace'],
+      },
       colors: {
         bg: {
           primary: "var(--bg-primary)",
@@ -21,6 +25,7 @@ const config: Config = {
           purple: "var(--neon-purple)",
           pink: "var(--neon-pink)",
           green: "var(--neon-green)",
+          orange: "var(--neon-orange)",
         },
         text: {
           primary: "var(--text-primary)",
@@ -34,23 +39,26 @@ const config: Config = {
         "theme-xl": "var(--radius-xl)",
       },
       boxShadow: {
-        "neon-cyan": "0 0 15px color-mix(in srgb, var(--neon-cyan) 30%, transparent), 0 0 40px color-mix(in srgb, var(--neon-cyan) 10%, transparent)",
-        "neon-purple": "0 0 15px color-mix(in srgb, var(--neon-purple) 30%, transparent), 0 0 40px color-mix(in srgb, var(--neon-purple) 10%, transparent)",
-        "neon-green": "0 0 15px color-mix(in srgb, var(--neon-green) 30%, transparent), 0 0 40px color-mix(in srgb, var(--neon-green) 10%, transparent)",
+        "soft": "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)",
+        "card": "0 1px 3px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.06)",
+        "elevated": "0 4px 12px rgba(0,0,0,0.1), 0 16px 48px rgba(0,0,0,0.08)",
+        "neon-cyan": "0 2px 12px color-mix(in srgb, var(--neon-cyan) 15%, transparent)",
+        "neon-purple": "0 2px 12px color-mix(in srgb, var(--neon-purple) 15%, transparent)",
+        "neon-green": "0 2px 12px color-mix(in srgb, var(--neon-green) 15%, transparent)",
       },
       animation: {
-        "pulse-neon": "pulseNeon 2s ease-in-out infinite",
+        "pulse-warm": "pulseWarm 2s ease-in-out infinite",
         "glow": "glow 2s ease-in-out infinite alternate",
         "shake": "shake 0.5s ease-in-out",
       },
       keyframes: {
-        pulseNeon: {
+        pulseWarm: {
           "0%, 100%": { opacity: "1" },
-          "50%": { opacity: "0.5" },
+          "50%": { opacity: "0.7" },
         },
         glow: {
-          "0%": { boxShadow: "0 0 5px color-mix(in srgb, var(--neon-cyan) 20%, transparent)" },
-          "100%": { boxShadow: "0 0 20px color-mix(in srgb, var(--neon-cyan) 60%, transparent)" },
+          "0%": { boxShadow: "0 2px 8px color-mix(in srgb, var(--neon-cyan) 10%, transparent)" },
+          "100%": { boxShadow: "0 4px 20px color-mix(in srgb, var(--neon-cyan) 20%, transparent)" },
         },
         shake: {
           "0%, 100%": { transform: "translateX(0)" },

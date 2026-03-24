@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Brain, Mail, Lock, User, LogIn, UserPlus, AlertCircle } from "lucide-react";
+import { BookMarked, Mail, Lock, User, LogIn, UserPlus, AlertCircle } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 import { NeonButton, Card } from "@/components/ui";
 
@@ -58,11 +58,11 @@ export default function AuthPage() {
       >
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-neon-cyan to-neon-purple flex items-center justify-center mx-auto mb-4">
-            <Brain size={32} className="text-bg-primary" />
+          <div className="w-16 h-16 rounded-3xl bg-neon-cyan/10 flex items-center justify-center mx-auto mb-4">
+            <BookMarked size={32} className="text-neon-cyan" />
           </div>
           <h1 className="text-2xl font-bold text-text-primary">
-            Langer<span className="neon-text-cyan">haus</span>
+            Langerhaus
           </h1>
           <p className="text-sm text-text-secondary mt-1">
             Cuaderno de arena y cálculo
@@ -71,7 +71,7 @@ export default function AuthPage() {
 
         <Card glow="purple">
           {/* Tab Switch */}
-          <div className="flex rounded-lg bg-bg-secondary p-1 mb-6">
+          <div className="flex rounded-xl bg-bg-secondary p-1 mb-6">
             <button
               onClick={() => { setMode("login"); setError(null); setSuccess(null); }}
               className={`flex-1 py-2 rounded-md text-sm font-medium transition-all ${
