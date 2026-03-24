@@ -61,11 +61,11 @@ export default function SkillNode({ topic, onClick, index }: SkillNodeProps) {
         ${!isLocked ? "cursor-pointer group" : "cursor-not-allowed opacity-60"}
       `}
     >
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3">
         {/* Status icon */}
         <div
           className={`
-            flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold
+            flex-shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center text-sm font-bold
             ${
               isLocked
                 ? "bg-text-muted/10 text-text-muted"
@@ -90,7 +90,7 @@ export default function SkillNode({ topic, onClick, index }: SkillNodeProps) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <h3
-              className={`font-semibold text-sm truncate ${
+              className={`font-semibold text-xs sm:text-sm truncate ${
                 isLocked ? "text-text-muted" : "text-text-primary"
               }`}
             >

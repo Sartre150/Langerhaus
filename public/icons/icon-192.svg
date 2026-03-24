@@ -1,0 +1,6 @@
+<svg width='192' height='192' xmlns='http://www.w3.org/2000/svg'>
+  <rect width='192' height='192' fill='#faf7f2' rx='38'/>
+  <circle cx='96' cy='96' r='82' fill='none' stroke='#b87a3d' stroke-width='4'/>
+  <text x='96' y='119' text-anchor='middle' font-family='system-ui,sans-serif' font-weight='800' font-size='67' fill='#3a3028'>L</text>
+  <text x='119' y='93' text-anchor='middle' font-family='system-ui,sans-serif' font-weight='400' font-size='23' fill='#b87a3d'>&#x2211;</text>
+</svg>

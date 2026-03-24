@@ -323,7 +323,7 @@ export default function ArenaPage() {
             <h3 className="text-sm font-bold text-text-primary uppercase tracking-wider mb-4">
               Dificultad
             </h3>
-            <div className="grid grid-cols-6 gap-2">
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
               <button
                 onClick={() => setDifficulty(0)}
                 className={`px-3 py-2.5 rounded-lg border text-xs font-semibold transition-all
@@ -357,12 +357,12 @@ export default function ArenaPage() {
             <h3 className="text-sm font-bold text-text-primary uppercase tracking-wider mb-4">
               Cantidad de problemas
             </h3>
-            <div className="flex gap-2">
+            <div className="grid grid-cols-3 sm:flex gap-2">
               {[5, 8, 10, 15, 20, 30].map((n) => (
                 <button
                   key={n}
                   onClick={() => setProblemCount(n)}
-                  className={`flex-1 px-3 py-2.5 rounded-lg border text-sm font-mono font-bold transition-all
+                  className={`sm:flex-1 px-3 py-3 sm:py-2.5 rounded-lg border text-sm font-mono font-bold transition-all
                     ${problemCount === n
                       ? "bg-neon-purple/10 border-neon-purple/40 text-neon-purple"
                       : "bg-bg-secondary/50 border-text-muted/10 text-text-secondary hover:border-text-muted/30"

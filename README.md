@@ -6,15 +6,18 @@
 
 ## Qué es
 
-Una plataforma gamificada de aprendizaje matemático con:
+Una plataforma gamificada de aprendizaje matemático, instalable como app (PWA) en cualquier dispositivo:
 
 - **11 niveles** (60+ temas) desde números naturales hasta ecuaciones diferenciales
 - **100+ problemas** con hints, soluciones paso a paso y verificación LaTeX
 - **7 visualizadores interactivos** (Canvas 2D): gráficas, fracciones, círculo unitario, derivadas, integrales, vectores, transformaciones matriciales
 - **Contenido educativo profundo** — teoría, fórmulas clave, aplicaciones reales (ML, física, finanzas, criptografía), ejemplos resueltos
-- **6 temas estéticos**: Cyberpunk, Solarpunk, Neobrutalismo, Bauhaus, Midnight, Retrowave
+- **6 temas cálidos**: Cuaderno, Domingo, Atardecer, Pizarrón, Biblioteca, Cosmos
 - **Progreso persistente** en Supabase con autenticación (email + Google OAuth)
 - **Árbol de habilidades** con desbloqueo en cascada al dominar temas
+- **Repetición espaciada (SM-2)** — racha diaria, recomendaciones inteligentes
+- **PWA instalable** — funciona como app nativa en iOS, Android y escritorio
+- **Diseño mobile-first** — adaptado para iPhone, iPad y cualquier pantalla
 
 ## Stack
 
@@ -24,6 +27,23 @@ Una plataforma gamificada de aprendizaje matemático con:
 - **react-katex** — renderizado LaTeX
 - **framer-motion** — animaciones
 - **Canvas 2D** — visualizadores interactivos
+- **PWA** — manifest.json + Service Worker para instalación y caché offline
+
+## Instalar como App
+
+### iPhone / iPad (Safari)
+1. Abre la app en Safari
+2. Toca el botón **Compartir** (⬆️)
+3. Selecciona **Agregar a Pantalla de Inicio**
+4. Confirma con **Agregar**
+
+### Android (Chrome)
+1. Abre la app en Chrome
+2. Toca el menú ⋮ → **Instalar aplicación** (o aparecerá un banner automático)
+
+### Escritorio (Chrome / Edge)
+1. Abre la app en el navegador
+2. Click en el ícono de instalación (⊕) en la barra de direcciones
 
 ## Setup
 
@@ -82,17 +102,18 @@ src/
 └── lib/
     ├── seedData.ts        # 60+ temas, 100+ problemas
     ├── explanations.ts    # Contenido educativo profundo
+    ├── problemGenerator.ts # Generador de problemas aleatorios
     ├── ProgressContext.tsx # Progreso + sync Supabase
-    ├── ThemeContext.tsx    # 6 temas estéticos
+    ├── StudyContext.tsx    # Repetición espaciada SM-2
+    ├── ThemeContext.tsx    # 6 temas cálidos
     └── AuthContext.tsx     # Supabase auth
+
+public/
+├── manifest.json      # PWA manifest
+├── sw.js              # Service Worker
+└── icons/             # Íconos de la app
 ```
 
 ## Licencia
 
 MIT
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

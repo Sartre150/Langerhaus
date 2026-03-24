@@ -89,7 +89,7 @@ export default function SkillTree({ topics }: SkillTreeProps) {
 
                 {/* Subtopic nodes */}
                 {mainTopic.children.length > 0 && (
-                  <div className="ml-4 lg:ml-8 space-y-2 border-l border-text-muted/10 pl-4">
+                  <div className="ml-2 sm:ml-4 lg:ml-8 space-y-2 border-l border-text-muted/10 pl-2 sm:pl-4">
                     {mainTopic.children.map((child, j) => (
                       <SkillNode
                         key={child.id}

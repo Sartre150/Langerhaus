@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Nunito } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
@@ -19,10 +19,30 @@ const geistMono = localFont({
   weight: "100 900",
 });
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#faf7f2" },
+    { media: "(prefers-color-scheme: dark)", color: "#1a1510" },
+  ],
+};
+
 export const metadata: Metadata = {
   title: "Langerhaus — Cuaderno de Arena y Cálculo",
   description:
     "Un lugar entre la memoria y las matemáticas. Roadmap visual de aritmética a cálculo multivariable.",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Langerhaus",
+  },
+  formatDetection: {
+    telephone: false,
+  },
 };
 
 export default function RootLayout({
@@ -33,14 +53,17 @@ export default function RootLayout({
   return (
     <html lang="es" className="dark">
       <head>
+        <link rel="icon" href="/icons/icon-192.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/icons/icon-192.svg" />
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('langerhaus-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}})()`,
+            __html: `(function(){try{var t=localStorage.getItem('langerhaus-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}})()`
+              + `;if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js')})}`,
           }}
         />
       </head>
       <body
-        className={`${nunito.variable} ${geistMono.variable} antialiased bg-bg-primary text-text-primary font-sans`}
+        className={`${nunito.variable} ${geistMono.variable} antialiased bg-bg-primary text-text-primary font-sans pt-safe pb-safe`}
       >
         <ThemeProvider>
           <AuthProvider>

@@ -101,12 +101,12 @@ export default function LearnPage() {
 
         {/* Tabs */}
         <div className="max-w-5xl mx-auto px-4">
-          <div className="flex gap-1 overflow-x-auto pb-0">
+          <div className="flex gap-0.5 sm:gap-1 overflow-x-auto pb-0 -mx-1 px-1">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition whitespace-nowrap ${
+                className={`flex items-center gap-1 sm:gap-2 px-2.5 sm:px-4 py-2.5 text-xs sm:text-sm font-medium border-b-2 transition whitespace-nowrap ${
                   activeTab === tab.id
                     ? "border-neon-cyan text-neon-cyan"
                     : "border-transparent text-text-muted hover:text-text-secondary"

@@ -97,7 +97,7 @@ export default function DashboardPage() {
               <p className="text-xs text-text-muted">Cuaderno de arena y cálculo</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <div className="hidden sm:flex items-center gap-2 mr-2 px-3 py-1.5 rounded-xl bg-bg-secondary border border-text-muted/10">
               <User size={14} className="text-neon-purple" />
               <span className="text-xs text-text-secondary font-medium">{userName}</span>
@@ -108,7 +108,7 @@ export default function DashboardPage() {
               icon={Palette}
               onClick={() => setShowThemePicker(true)}
             >
-              Tema
+              <span className="hidden sm:inline">Tema</span>
             </NeonButton>
             <NeonButton
               variant="ghost"
@@ -116,7 +116,7 @@ export default function DashboardPage() {
               icon={RotateCcw}
               onClick={() => setShowResetConfirm(true)}
             >
-              Reset
+              <span className="hidden sm:inline">Reset</span>
             </NeonButton>
             <NeonButton
               variant="ghost"
@@ -127,7 +127,7 @@ export default function DashboardPage() {
                 router.push("/auth");
               }}
             >
-              Salir
+              <span className="hidden sm:inline">Salir</span>
             </NeonButton>
           </div>
         </div>
@@ -138,7 +138,7 @@ export default function DashboardPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-6"
+          className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-2 sm:gap-3 mb-6"
         >
           {/* Streak card — spans full width on mobile, first col on desktop */}
           <Card className="!p-4 col-span-2 lg:col-span-1 lg:row-span-2 flex flex-col items-center justify-center gap-2 relative overflow-hidden">
@@ -364,22 +364,24 @@ export default function DashboardPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.15 }}
-          className="flex items-center gap-3 mb-6 px-1"
+          className="flex flex-wrap items-center gap-2 sm:gap-3 mb-6 px-1"
         >
           <span className="text-xs text-text-muted">Meta diaria:</span>
-          {[5, 10, 15, 20, 30].map((g) => (
-            <button
-              key={g}
-              onClick={() => setDailyGoal(g)}
-              className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
-                streak.dailyGoal === g
-                  ? "bg-neon-orange/20 text-neon-orange border border-neon-orange/30"
-                  : "bg-bg-secondary text-text-muted hover:text-text-secondary border border-transparent"
-              }`}
-            >
-              {g}
-            </button>
-          ))}
+          <div className="flex gap-1.5 sm:gap-2 flex-wrap">
+            {[5, 10, 15, 20, 30].map((g) => (
+              <button
+                key={g}
+                onClick={() => setDailyGoal(g)}
+                className={`px-2.5 py-1.5 sm:py-1 rounded-md text-xs font-medium transition-all min-w-[2.25rem] ${
+                  streak.dailyGoal === g
+                    ? "bg-neon-orange/20 text-neon-orange border border-neon-orange/30"
+                    : "bg-bg-secondary text-text-muted hover:text-text-secondary border border-transparent"
+                }`}
+              >
+                {g}
+              </button>
+            ))}
+          </div>
           <span className="text-[10px] text-text-muted">problemas</span>
         </motion.div>
 

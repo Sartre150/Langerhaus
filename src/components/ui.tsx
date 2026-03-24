@@ -25,9 +25,9 @@ const variantStyles = {
 };
 
 const sizeStyles = {
-  sm: "px-3 py-1.5 text-xs",
-  md: "px-5 py-2.5 text-sm",
-  lg: "px-8 py-3.5 text-base",
+  sm: "px-3 py-2 sm:py-1.5 text-xs",
+  md: "px-4 sm:px-5 py-2.5 text-sm",
+  lg: "px-6 sm:px-8 py-3.5 text-base",
 };
 
 export function NeonButton({
