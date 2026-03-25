@@ -53,7 +53,7 @@ export default function ArenaPage() {
   const params = useParams();
   const router = useRouter();
   const topicId = params.topic_id as string;
-  const { getTopicProgress, getExerciseStats, recordExercise, masteryConfig } = useProgress();
+  const { getTopicProgress, getExerciseStats, recordExercise } = useProgress();
   const { recordDailyProblem, recordReview, initReviewCard } = useStudy();
 
   // ── Page mode: config (select topics/difficulty) vs practice ──
@@ -71,7 +71,7 @@ export default function ArenaPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answer, setAnswer] = useState("");
   const [state, setState] = useState<ArenaState>("solving");
-  const [hintsUsed, setHintsUsed] = useState(0);
+  const [, setHintsUsed] = useState(0);
   const [attempts, setAttempts] = useState(0);
   const [showHint1, setShowHint1] = useState(false);
   const [showHint2, setShowHint2] = useState(false);
