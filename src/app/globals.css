@@ -207,6 +207,19 @@ body {
 
 .katex-display {
   margin: 0.5em 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent KaTeX from overflowing containers on mobile */
+.katex-html {
+  white-space: normal;
+  word-break: break-word;
+}
+
+.katex .base {
+  display: inline;
 }
 
 @layer utilities {
@@ -249,5 +262,32 @@ body {
   ::-webkit-scrollbar {
     width: 0;
     height: 0;
+  }
+}
+
+/* iPhone safe area and mobile viewport fixes */
+@supports (padding: max(0px)) {
+  body {
+    padding-left: max(0px, env(safe-area-inset-left));
+    padding-right: max(0px, env(safe-area-inset-right));
+  }
+}
+
+/* Prevent double-tap zoom on interactive elements (iOS) */
+button, a, input, select, textarea {
+  touch-action: manipulation;
+}
+
+/* Ensure modals don't overflow viewport on mobile */
+.fixed.inset-0 {
+  /* Use dvh for dynamic viewport height (respects iOS toolbar) */
+  height: 100dvh;
+  height: -webkit-fill-available;
+}
+
+/* Cards need less padding on small mobile screens */
+@media (max-width: 380px) {
+  .rounded-2xl.bg-bg-card.p-6 {
+    padding: 1rem;
   }
 }

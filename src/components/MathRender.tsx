@@ -2,6 +2,7 @@
 
 import "katex/dist/katex.min.css";
 import { InlineMath, BlockMath } from "react-katex";
+import React from "react";
 
 /* Sentinels – ASCII SOH (\x01) never appears in normal text or LaTeX */
 const S_NL = "\x01NL\x01";   // escaped \\ (double backslash → LaTeX newline)
@@ -20,20 +21,51 @@ function restoreMath(s: string) {
   return s.replace(/\x01NL\x01/g, "\\\\").replace(/\x01DS\x01/g, "\\$");
 }
 
+// ── Error boundary to catch KaTeX rendering crashes on mobile ──
+class MathErrorBoundary extends React.Component<
+  { children: React.ReactNode; fallback: string },
+  { hasError: boolean }
+> {
+  constructor(props: { children: React.ReactNode; fallback: string }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  render() {
+    if (this.state.hasError) {
+      return <span className="text-text-secondary font-mono text-sm break-all">{this.props.fallback}</span>;
+    }
+    return this.props.children;
+  }
+}
+
 interface MathRenderProps {
   content: string;
   block?: boolean;
 }
 
 export default function MathRender({ content, block = false }: MathRenderProps) {
+  // Guard: handle null, undefined, empty
+  if (!content || typeof content !== "string") return null;
+
   if (block) {
     return (
-      <div className="my-2">
-        {renderMixedContent(content, true)}
-      </div>
+      <MathErrorBoundary fallback={content}>
+        <div className="my-2 overflow-x-auto overflow-y-hidden -mx-1 px-1">
+          {renderMixedContent(content, true)}
+        </div>
+      </MathErrorBoundary>
     );
   }
-  return <span>{renderMixedContent(content, false)}</span>;
+  return (
+    <MathErrorBoundary fallback={content}>
+      <span className="inline-block max-w-full overflow-x-auto overflow-y-hidden">
+        {renderMixedContent(content, false)}
+      </span>
+    </MathErrorBoundary>
+  );
 }
 
 function renderMixedContent(text: string, isBlock: boolean) {

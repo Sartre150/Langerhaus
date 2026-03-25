@@ -157,7 +157,12 @@ export function Modal({ isOpen = true, onClose, children }: ModalProps) {
       if (e.key === "Escape") onClose();
     };
     document.addEventListener("keydown", handleKey);
-    return () => document.removeEventListener("keydown", handleKey);
+    // Prevent body scrolling when modal is open
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", handleKey);
+      document.body.style.overflow = "";
+    };
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
@@ -167,19 +172,24 @@ export function Modal({ isOpen = true, onClose, children }: ModalProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
       role="dialog"
       aria-modal="true"
+      style={{ height: "100dvh" }}
     >
       <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" onClick={onClose} />
       <motion.div
-        initial={{ scale: 0.95, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.95, opacity: 0 }}
+        initial={{ scale: 0.95, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.95, opacity: 0, y: 20 }}
         transition={{ type: "spring", damping: 30, stiffness: 350 }}
-        className="relative z-10 w-full max-w-lg"
+        className="relative z-10 w-full sm:max-w-lg max-h-[85dvh] overflow-y-auto"
       >
-        <Card glow="purple" className="!p-0 overflow-hidden">
+        {/* Drag handle for mobile sheet */}
+        <div className="sm:hidden flex justify-center pt-2 pb-1 sticky top-0 bg-bg-card rounded-t-2xl z-10">
+          <div className="w-10 h-1 rounded-full bg-text-muted/30" />
+        </div>
+        <Card glow="purple" className="!p-0 overflow-hidden !rounded-t-2xl sm:!rounded-2xl !rounded-b-none sm:!rounded-b-2xl">
           {children}
         </Card>
       </motion.div>

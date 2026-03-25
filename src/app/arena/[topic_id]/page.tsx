@@ -243,21 +243,21 @@ export default function ArenaPage() {
     return (
       <div className="min-h-screen bg-bg-primary bg-grid">
         <header className="sticky top-0 z-40 bg-bg-primary/80 backdrop-blur-md border-b border-text-muted/10">
-          <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
+          <div className="max-w-2xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center gap-2 sm:gap-3">
             <button
               onClick={() => router.push("/dashboard")}
-              className="flex items-center gap-2 text-sm text-text-secondary hover:text-text-primary transition-colors"
+              className="flex items-center gap-2 text-sm text-text-secondary hover:text-text-primary transition-colors p-1"
             >
               <ArrowLeft size={16} />
             </button>
-            <Settings size={20} className="text-neon-purple" />
-            <h1 className="text-sm font-bold text-text-primary flex-1 truncate">
-              Configurar Práctica — {topic.title}
+            <Settings size={18} className="text-neon-purple flex-shrink-0" />
+            <h1 className="text-xs sm:text-sm font-bold text-text-primary flex-1 truncate">
+              {topic.title}
             </h1>
           </div>
         </header>
 
-        <main className="max-w-2xl mx-auto px-4 py-8 space-y-6">
+        <main className="max-w-2xl mx-auto px-3 sm:px-4 py-4 sm:py-8 space-y-4 sm:space-y-6">
           {/* ── Topic Selection ── */}
           {selectableTopics.length > 1 && (
             <Card glow="purple">
@@ -479,50 +479,52 @@ export default function ArenaPage() {
     <div className="min-h-screen bg-bg-primary bg-grid">
       {/* Top Bar */}
       <header className="sticky top-0 z-40 bg-bg-primary/80 backdrop-blur-md border-b border-text-muted/10">
-        <div className="max-w-3xl mx-auto px-4 py-3">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-3">
+        <div className="max-w-3xl mx-auto px-3 sm:px-4 py-2 sm:py-3">
+          <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+            <div className="flex items-center gap-2 sm:gap-3">
               <button
                 onClick={() => router.push("/dashboard")}
-                className="flex items-center gap-1 text-sm text-text-muted hover:text-text-primary transition-colors"
+                className="flex items-center gap-1 text-sm text-text-muted hover:text-text-primary transition-colors p-1"
               >
                 <ArrowLeft size={16} />
               </button>
               <button
                 onClick={() => setPageMode("config")}
-                className="flex items-center gap-2 text-sm text-text-secondary hover:text-text-primary transition-colors"
+                className="flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors p-1"
               >
-                <Settings size={16} />
-                <span>Configurar</span>
+                <Settings size={14} />
+                <span className="hidden sm:inline">Configurar</span>
               </button>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap justify-end">
               {/* Session counter */}
               <Badge color="green">
                 {sessionStats.correct}/{sessionStats.attempted}
               </Badge>
               <Badge color="purple">
-                {currentIndex + 1} / {problems.length}
+                {currentIndex + 1}/{problems.length}
               </Badge>
-              <Badge color="cyan">Puntos: {score}</Badge>
+              <Badge color="cyan">{score}%</Badge>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-sm font-bold text-text-primary flex-1 truncate">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <h1 className="text-xs sm:text-sm font-bold text-text-primary flex-1 truncate">
               {currentProblemTopic?.title || topic.title}
             </h1>
-            <ProgressBar
-              value={currentIndex + 1}
-              max={problems.length}
-              color="cyan"
-              showLabel={false}
-              size="sm"
-            />
+            <div className="w-20 sm:w-auto flex-shrink-0">
+              <ProgressBar
+                value={currentIndex + 1}
+                max={problems.length}
+                color="cyan"
+                showLabel={false}
+                size="sm"
+              />
+            </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-4 py-8">
+      <main className="max-w-3xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentProblem.id}
@@ -533,31 +535,31 @@ export default function ArenaPage() {
           >
             {/* Problem Card */}
             <motion.div animate={shake ? { x: [-4, 4, -4, 4, 0] } : {}} transition={{ duration: 0.4 }}>
-              <Card glow="cyan" className="mb-6">
-                <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-                  <div className="flex items-center gap-2">
+              <Card glow="cyan" className="mb-4 sm:mb-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 sm:mb-4 gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <Badge color="purple">
-                      Dificultad: {"★".repeat(currentProblem.difficulty)}{"☆".repeat(5 - currentProblem.difficulty)}
+                      {"★".repeat(currentProblem.difficulty)}{"☆".repeat(5 - currentProblem.difficulty)}
                     </Badge>
                     {/* Calculator policy indicator */}
-                    <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border
+                    <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-semibold border
                       ${calcPolicy === "mental" ? "bg-green-500/10 border-green-500/30" : ""}
                       ${calcPolicy === "optional" ? "bg-yellow-500/10 border-yellow-500/30" : ""}
                       ${calcPolicy === "calculator" ? "bg-cyan-500/10 border-cyan-500/30" : ""}
                     `}
                       title={policyMeta.description}
                     >
-                      <PolicyIcon size={12} className={policyMeta.color} />
+                      <PolicyIcon size={11} className={policyMeta.color} />
                       <span className={policyMeta.color}>{policyMeta.label}</span>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     {/* Exercise counter for this topic */}
-                    <span className="text-xs text-text-muted font-mono" title="Ejercicios resueltos de este tema">
-                      📊 {currentProblemStats.correct}/{currentProblemStats.attempted} resueltos
+                    <span className="text-[10px] sm:text-xs text-text-muted font-mono" title="Ejercicios resueltos de este tema">
+                      {currentProblemStats.correct}/{currentProblemStats.attempted}
                     </span>
                     {attempts > 0 && state === "solving" && (
-                      <Badge color="gray">Intentos: {attempts}</Badge>
+                      <Badge color="gray">×{attempts}</Badge>
                     )}
                   </div>
                 </div>
@@ -702,13 +704,13 @@ export default function ArenaPage() {
 
             {/* Answer Input */}
             {(state === "solving" || state === "wrong") && (
-              <Card className="mb-4">
+              <Card className="mb-4 !p-3 sm:!p-6">
                 <label className="block text-xs text-text-secondary mb-2 font-semibold uppercase tracking-wider">
-                  Tu Respuesta (LaTeX)
+                  Tu Respuesta
                 </label>
 
                 {/* Quick symbol buttons */}
-                <div className="flex flex-wrap gap-1.5 mb-3">
+                <div className="flex flex-wrap gap-1 sm:gap-1.5 mb-3">
                   {[
                     { label: "frac", symbol: "\\frac{}{}", icon: Divide },
                     { label: "√", symbol: "\\sqrt{}", icon: Radical },
@@ -726,9 +728,9 @@ export default function ArenaPage() {
                     <button
                       key={s.label}
                       onClick={() => insertSymbol(s.symbol)}
-                      className="px-2.5 py-1.5 rounded-md bg-bg-secondary border border-text-muted/20
-                        text-text-secondary hover:text-neon-cyan hover:border-neon-cyan/30
-                        transition-all text-xs font-mono"
+                      className="px-2 py-1.5 sm:px-2.5 rounded-md bg-bg-secondary border border-text-muted/20
+                        text-text-secondary hover:text-neon-cyan hover:border-neon-cyan/30 active:scale-95
+                        transition-all text-xs font-mono min-w-[2rem] min-h-[2rem]"
                       title={s.symbol}
                     >
                       {s.label}
@@ -744,14 +746,19 @@ export default function ArenaPage() {
                     onKeyDown={(e) => {
                       if (e.key === "Enter") handleSubmit();
                     }}
-                    placeholder="Escribe tu respuesta aquí... (ej: \\frac{2}{3})"
-                    className="flex-1 bg-bg-secondary border border-text-muted/20 rounded-lg px-4 py-3
+                    placeholder="Escribe tu respuesta..."
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="off"
+                    spellCheck={false}
+                    className="flex-1 bg-bg-secondary border border-text-muted/20 rounded-lg px-3 sm:px-4 py-2.5 sm:py-3
                       text-text-primary placeholder-text-muted/50 font-mono text-sm
                       focus:outline-none focus:border-neon-cyan/50 focus:shadow-neon-cyan
-                      transition-all"
+                      transition-all min-w-0"
                   />
                   <NeonButton variant="cyan" icon={Send} onClick={handleSubmit} disabled={!answer.trim()}>
-                    Verificar
+                    <span className="hidden sm:inline">Verificar</span>
+                    <span className="sm:hidden">OK</span>
                   </NeonButton>
                 </div>
 
@@ -769,14 +776,15 @@ export default function ArenaPage() {
 
             {/* Action buttons */}
             {state === "solving" && (
-              <div className="flex justify-between items-center">
+              <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2 sm:gap-0">
                 <NeonButton
                   variant="danger"
                   size="sm"
                   icon={Eye}
                   onClick={handleSurrender}
+                  className="w-full sm:w-auto"
                 >
-                  Rendirse (Ver Solución)
+                  Rendirse
                 </NeonButton>
                 <div className="flex gap-2">
                   <NeonButton
@@ -784,22 +792,27 @@ export default function ArenaPage() {
                     size="sm"
                     icon={Settings}
                     onClick={() => setPageMode("config")}
+                    className="flex-1 sm:flex-initial"
                   >
-                    Reconfigurar
+                    <span className="hidden sm:inline">Reconfigurar</span>
+                    <span className="sm:hidden">Config</span>
                   </NeonButton>
                   <NeonButton
                     variant="ghost"
                     size="sm"
                     icon={RefreshCw}
                     onClick={startPractice}
+                    className="flex-1 sm:flex-initial"
                   >
-                    Regenerar
+                    <span className="hidden sm:inline">Regenerar</span>
+                    <span className="sm:hidden">Nueva</span>
                   </NeonButton>
                   <NeonButton
                     variant="ghost"
                     size="sm"
                     icon={SkipForward}
                     onClick={nextProblem}
+                    className="flex-1 sm:flex-initial"
                   >
                     Saltar
                   </NeonButton>

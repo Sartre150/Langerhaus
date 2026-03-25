@@ -25,7 +25,7 @@ export default function DashboardPage() {
   const [showThemePicker, setShowThemePicker] = useState(false);
   const { user, loading, signOut } = useAuth();
   const { getTopicsTree, resetProgress, progressLoading } = useProgress();
-  const { streak, getDueReviews, getRecommendedTopics, getWeakTopics, getActivityHistory, setDailyGoal } = useStudy();
+  const { streak, getDueReviews, getRecommendedTopics, getWeakTopics, getActivityHistory, setDailyGoal, resetStudyData } = useStudy();
   const router = useRouter();
 
   useEffect(() => {
@@ -438,6 +438,7 @@ export default function DashboardPage() {
                   disabled={resetConfirmText !== "BORRAR"}
                   onClick={() => {
                     resetProgress();
+                    resetStudyData();
                     setShowResetConfirm(false);
                     setResetConfirmText("");
                   }}

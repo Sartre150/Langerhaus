@@ -76,6 +76,9 @@ interface StudyContextType {
   // Smart recommendations
   getRecommendedTopics: () => { topicId: string; reason: string; priority: number }[];
   getWeakTopics: () => { topicId: string; accuracy: number; attempted: number }[];
+
+  // Reset all study data
+  resetStudyData: () => void;
 }
 
 const StudyContext = createContext<StudyContextType>({
@@ -90,6 +93,7 @@ const StudyContext = createContext<StudyContextType>({
   getActivityHistory: () => [],
   getRecommendedTopics: () => [],
   getWeakTopics: () => [],
+  resetStudyData: () => {},
 });
 
 export function StudyProvider({ children }: { children: React.ReactNode }) {
@@ -350,6 +354,25 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
     return recs.sort((a, b) => a.priority - b.priority).slice(0, 5);
   }, [getDueReviews, getWeakTopics, user]);
 
+  // ── Reset all study data ──
+  const resetStudyData = useCallback(() => {
+    setReviewCards([]);
+    setStreakData({
+      currentStreak: 0,
+      longestStreak: 0,
+      lastActiveDate: "",
+      dailyGoal: 10,
+      todayProgress: 0,
+    });
+    setActivityLog([]);
+
+    try {
+      localStorage.removeItem(storageKey("review-cards"));
+      localStorage.removeItem(storageKey("streak"));
+      localStorage.removeItem(storageKey("activity-log"));
+    } catch { /* ignore */ }
+  }, [storageKey]);
+
   return (
     <StudyContext.Provider
       value={{
@@ -364,6 +387,7 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
         getActivityHistory,
         getRecommendedTopics,
         getWeakTopics,
+        resetStudyData,
       }}
     >
       {children}
