@@ -1,8 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { PenLine, Trophy, X, BookOpen, BarChart3 } from "lucide-react";
-import { TopicWithProgress } from "@/lib/types";
+import { PenLine, Trophy, X, BookOpen, BarChart3, Target } from "lucide-react";
+import { TopicWithProgress, MASTERY_CONFIG } from "@/lib/types";
 import { NeonButton, ProgressBar, Badge } from "./ui";
 import { Modal } from "./ui";
 import { useProgress } from "@/lib/ProgressContext";
@@ -73,6 +73,59 @@ export default function TopicModal({ topic, isOpen, onClose }: TopicModalProps) 
             Nivel de Maestría: <span className="text-text-primary font-mono">{topic.score}/100</span>
           </p>
         </div>
+
+        {/* Mastery Requirements Checklist */}
+        {!isMastered && topic.status !== "locked" && (
+          <div className="mb-6 p-3 rounded-lg bg-bg-secondary/50 border border-neon-purple/20">
+            <div className="flex items-center gap-2 mb-3">
+              <Target size={14} className="text-neon-purple" />
+              <span className="text-xs font-semibold text-text-primary uppercase tracking-wider">
+                Requisitos para dominar
+              </span>
+            </div>
+            {(() => {
+              const accuracy = totalStats.attempted > 0 ? totalStats.correct / totalStats.attempted : 0;
+              const hardProblems = statsTopics.reduce((sum, t) => {
+                const s = getExerciseStats(t.id);
+                return sum + Object.entries(s.byDifficulty || {})
+                  .filter(([d]) => Number(d) >= MASTERY_CONFIG.HARD_DIFFICULTY_THRESHOLD)
+                  .reduce((acc, [, b]) => acc + b.correct, 0);
+              }, 0);
+              const checks = [
+                {
+                  done: totalStats.attempted >= MASTERY_CONFIG.MIN_EXERCISES,
+                  label: `Mínimo ${MASTERY_CONFIG.MIN_EXERCISES} ejercicios`,
+                  detail: `${totalStats.attempted}/${MASTERY_CONFIG.MIN_EXERCISES}`,
+                },
+                {
+                  done: accuracy >= MASTERY_CONFIG.MIN_ACCURACY,
+                  label: `Precisión ≥ ${MASTERY_CONFIG.MIN_ACCURACY * 100}%`,
+                  detail: totalStats.attempted > 0 ? `${Math.round(accuracy * 100)}%` : "—",
+                },
+                {
+                  done: hardProblems >= MASTERY_CONFIG.MIN_HARD_PROBLEMS,
+                  label: `${MASTERY_CONFIG.MIN_HARD_PROBLEMS}+ aciertos en dificultad ≥ ${MASTERY_CONFIG.HARD_DIFFICULTY_THRESHOLD}`,
+                  detail: `${hardProblems}/${MASTERY_CONFIG.MIN_HARD_PROBLEMS}`,
+                },
+              ];
+              return (
+                <div className="space-y-2">
+                  {checks.map((c, i) => (
+                    <div key={i} className="flex items-center gap-2 text-xs">
+                      <span className={`w-4 h-4 rounded-full border flex items-center justify-center flex-shrink-0 ${c.done ? "bg-neon-green/20 border-neon-green/50 text-neon-green" : "border-text-muted/30 text-text-muted"}`}>
+                        {c.done ? "✓" : ""}
+                      </span>
+                      <span className={`flex-1 ${c.done ? "text-text-primary" : "text-text-secondary"}`}>
+                        {c.label}
+                      </span>
+                      <span className="text-text-muted font-mono">{c.detail}</span>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
+          </div>
+        )}
 
         {/* Exercise Stats */}
         {totalStats.attempted > 0 && (

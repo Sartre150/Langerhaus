@@ -4,11 +4,76 @@ import { createContext, useContext, useEffect, useState, useCallback, useRef } f
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/AuthContext";
 import { seedTopics } from "@/lib/seedData";
-import { TopicStatus, TopicWithProgress, ExerciseStats } from "@/lib/types";
+import { TopicStatus, TopicWithProgress, ExerciseStats, MASTERY_CONFIG } from "@/lib/types";
 
 interface ProgressEntry {
   status: TopicStatus;
   score: number;
+}
+
+// ── Default empty stats (with new fields) ──
+const EMPTY_STATS: ExerciseStats = {
+  attempted: 0,
+  correct: 0,
+  byDifficulty: {},
+  currentStreak: 0,
+  bestStreak: 0,
+};
+
+// ══════════════════════════════════════════════════════════════════
+// MASTERY SCORE CALCULATION
+// Based on Bloom's Mastery Learning, Knowledge Space Theory, and
+// spaced-repetition research. Four weighted dimensions ensure that
+// "mastering" a topic requires breadth, depth, and consistency.
+// ══════════════════════════════════════════════════════════════════
+
+function calculateMasteryScore(stats: ExerciseStats): { score: number; canMaster: boolean } {
+  if (stats.attempted === 0) return { score: 0, canMaster: false };
+
+  const { WEIGHTS, MIN_EXERCISES, MIN_ACCURACY, MIN_HARD_PROBLEMS, HARD_DIFFICULTY_THRESHOLD, STREAK_FOR_FULL_CREDIT } = MASTERY_CONFIG;
+
+  // 1) ACCURACY (0-100): ratio of correct to attempted
+  const accuracy = stats.correct / stats.attempted;
+  const accuracyScore = accuracy * 100;
+
+  // 2) VOLUME (0-100): enough practice to be statistically meaningful
+  const volumeScore = Math.min(stats.attempted / MIN_EXERCISES, 1) * 100;
+
+  // 3) DIFFICULTY PROGRESSION (0-100): weighted avg difficulty of correct answers
+  //    Only solving d=1 → max ~20pts. Solving d=3+ gives full credit.
+  let diffWeightedSum = 0;
+  let diffCorrectTotal = 0;
+  for (const [dStr, bucket] of Object.entries(stats.byDifficulty)) {
+    const d = Number(dStr);
+    diffWeightedSum += d * bucket.correct;
+    diffCorrectTotal += bucket.correct;
+  }
+  const avgDifficulty = diffCorrectTotal > 0 ? diffWeightedSum / diffCorrectTotal : 0;
+  // Map avg difficulty (1-5) to 0-100. d=1 → 20, d=3 → 60, d=5 → 100
+  const difficultyScore = Math.min((avgDifficulty / 5) * 100, 100);
+
+  // 4) CONSISTENCY (0-100): best streak of consecutive correct answers
+  const consistencyScore = Math.min(stats.bestStreak / STREAK_FOR_FULL_CREDIT, 1) * 100;
+
+  // Weighted composite
+  const composite = Math.round(
+    (accuracyScore * WEIGHTS.ACCURACY +
+      volumeScore * WEIGHTS.VOLUME +
+      difficultyScore * WEIGHTS.DIFFICULTY +
+      consistencyScore * WEIGHTS.CONSISTENCY) / 100
+  );
+
+  // Hard gates for true mastery
+  const hardProblemsCorrect = Object.entries(stats.byDifficulty)
+    .filter(([dStr]) => Number(dStr) >= HARD_DIFFICULTY_THRESHOLD)
+    .reduce((sum, [, b]) => sum + b.correct, 0);
+
+  const canMaster =
+    accuracy >= MIN_ACCURACY &&
+    stats.attempted >= MIN_EXERCISES &&
+    hardProblemsCorrect >= MIN_HARD_PROBLEMS;
+
+  return { score: Math.min(composite, 100), canMaster };
 }
 
 interface ProgressContextType {
@@ -20,8 +85,10 @@ interface ProgressContextType {
   resetProgress: () => void;
   /** Exercise stats tracking */
   getExerciseStats: (topicId: string) => ExerciseStats;
-  recordExercise: (topicId: string, correct: boolean) => void;
+  recordExercise: (topicId: string, correct: boolean, difficulty: number) => void;
   getAllExerciseStats: () => Map<string, ExerciseStats>;
+  /** Mastery config for UI display */
+  masteryConfig: typeof MASTERY_CONFIG;
 }
 
 const ProgressContext = createContext<ProgressContextType>({
@@ -30,9 +97,10 @@ const ProgressContext = createContext<ProgressContextType>({
   addScore: () => {},
   getTopicsTree: () => [],
   resetProgress: () => {},
-  getExerciseStats: () => ({ attempted: 0, correct: 0 }),
+  getExerciseStats: () => ({ ...EMPTY_STATS }),
   recordExercise: () => {},
   getAllExerciseStats: () => new Map(),
+  masteryConfig: MASTERY_CONFIG,
 });
 
 export function ProgressProvider({ children }: { children: React.ReactNode }) {
@@ -44,15 +112,24 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
   const mapRef = useRef(progressMap);
   mapRef.current = progressMap;
 
-  // ── Load exercise stats from localStorage ──
+  // ── Load exercise stats from localStorage (with migration for old format) ──
   useEffect(() => {
     try {
       const key = user ? `exercise-stats-${user.id}` : "exercise-stats-guest";
       const stored = localStorage.getItem(key);
       if (stored) {
-        const parsed = JSON.parse(stored) as Record<string, ExerciseStats>;
+        const parsed = JSON.parse(stored) as Record<string, Partial<ExerciseStats>>;
         const map = new Map<string, ExerciseStats>();
-        Object.entries(parsed).forEach(([k, v]) => map.set(k, v));
+        Object.entries(parsed).forEach(([k, v]) => {
+          // Migrate old format: if missing new fields, add defaults
+          map.set(k, {
+            attempted: v.attempted ?? 0,
+            correct: v.correct ?? 0,
+            byDifficulty: v.byDifficulty ?? {},
+            currentStreak: v.currentStreak ?? 0,
+            bestStreak: v.bestStreak ?? 0,
+          });
+        });
         setExerciseStatsMap(map);
       }
     } catch { /* ignore */ }
@@ -213,7 +290,7 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
     [persistEntry]
   );
 
-  // ── getTopicsTree (computed from cache) ──
+  // ── getTopicsTree (computed from cache, parent scores aggregated from children) ──
   const getTopicsTree = useCallback((): TopicWithProgress[] => {
     const mainTopics = seedTopics.filter((t) => t.parent_topic_id === null);
     return mainTopics
@@ -232,10 +309,27 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
               children: [],
             };
           });
+
+        // Compute parent score as average of children scores (live aggregation)
+        let parentScore = progress.score;
+        let parentStatus = progress.status;
+        if (children.length > 0 && parentStatus !== "locked") {
+          const avgChildScore = Math.round(
+            children.reduce((sum, c) => sum + c.score, 0) / children.length
+          );
+          const allChildrenMastered = children.every((c) => c.status === "mastered");
+          if (allChildrenMastered) {
+            parentScore = 100;
+            parentStatus = "mastered";
+          } else {
+            parentScore = Math.max(parentScore, avgChildScore);
+          }
+        }
+
         return {
           ...topic,
-          status: progress.status,
-          score: progress.score,
+          status: parentStatus,
+          score: parentScore,
           children,
         };
       });
@@ -245,6 +339,13 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
   const resetProgress = useCallback(() => {
     const defaults = buildDefaults();
     setProgressMap(defaults);
+    setExerciseStatsMap(new Map());
+
+    // Clear exercise stats from localStorage
+    try {
+      const key = user ? `exercise-stats-${user.id}` : "exercise-stats-guest";
+      localStorage.removeItem(key);
+    } catch { /* ignore */ }
 
     if (!user) return;
     // Delete all progress rows for this user in Supabase
@@ -268,22 +369,166 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
   }, [user]);
 
   const getExerciseStats = useCallback((topicId: string): ExerciseStats => {
-    return exerciseStatsMap.get(topicId) || { attempted: 0, correct: 0 };
+    return exerciseStatsMap.get(topicId) || { ...EMPTY_STATS };
   }, [exerciseStatsMap]);
 
-  const recordExercise = useCallback((topicId: string, correct: boolean) => {
+  // ── Centralized mastery recalculation + unlock cascade ──
+  const recalculateMastery = useCallback(
+    (topicId: string, stats: ExerciseStats) => {
+      const { score, canMaster } = calculateMasteryScore(stats);
+
+      setProgressMap((prev) => {
+        const next = new Map(prev);
+        const current = next.get(topicId) || { status: "unlocked" as TopicStatus, score: 0 };
+
+        // Determine new status
+        const newStatus: TopicStatus =
+          canMaster && score >= 80
+            ? "mastered"
+            : current.status === "locked"
+              ? "unlocked"
+              : current.status;
+
+        const entry = { status: newStatus, score };
+        next.set(topicId, entry);
+        setTimeout(() => persistEntry(topicId, entry), 0);
+
+        // ── Unlock cascade when mastered ──
+        if (newStatus === "mastered" && current.status !== "mastered") {
+          const topic = seedTopics.find((t) => t.id === topicId);
+          if (topic) {
+            const unlock = (id: string) => {
+              const cur = next.get(id);
+              if (cur && cur.status === "locked") {
+                const updated = { ...cur, status: "unlocked" as TopicStatus };
+                next.set(id, updated);
+                setTimeout(() => persistEntry(id, updated), 0);
+              }
+            };
+
+            // Unlock children of this topic
+            const children = seedTopics.filter((t) => t.parent_topic_id === topicId);
+            children.forEach((child) => unlock(child.id));
+
+            if (topic.parent_topic_id) {
+              // Check if all siblings mastered → master parent → unlock next level
+              const siblings = seedTopics.filter(
+                (t) => t.parent_topic_id === topic.parent_topic_id
+              );
+              const allMastered = siblings.every((s) => {
+                const p = next.get(s.id);
+                return p && p.status === "mastered";
+              });
+              if (allMastered) {
+                const parentEntry = { status: "mastered" as TopicStatus, score: 100 };
+                next.set(topic.parent_topic_id, parentEntry);
+                setTimeout(() => persistEntry(topic.parent_topic_id!, parentEntry), 0);
+
+                const currentLevel = topic.level;
+                const nextLevelTopics = seedTopics.filter(
+                  (t) => t.level === currentLevel + 1 && t.parent_topic_id === null
+                );
+                nextLevelTopics.forEach((t) => {
+                  unlock(t.id);
+                  const subtopics = seedTopics.filter((st) => st.parent_topic_id === t.id);
+                  subtopics.forEach((st) => unlock(st.id));
+                });
+              } else {
+                // ── Update parent score as average of children (partial progress) ──
+                const parentChildren = seedTopics.filter(
+                  (t) => t.parent_topic_id === topic.parent_topic_id
+                );
+                const avgScore = Math.round(
+                  parentChildren.reduce((sum, c) => {
+                    const p = next.get(c.id);
+                    return sum + (p ? p.score : 0);
+                  }, 0) / parentChildren.length
+                );
+                const parentCurrent = next.get(topic.parent_topic_id) || {
+                  status: "unlocked" as TopicStatus,
+                  score: 0,
+                };
+                // Only update if parent isn't already mastered
+                if (parentCurrent.status !== "mastered") {
+                  const parentStatus: TopicStatus =
+                    parentCurrent.status === "locked" ? "unlocked" : parentCurrent.status;
+                  const parentEntry = { status: parentStatus, score: avgScore };
+                  next.set(topic.parent_topic_id, parentEntry);
+                  setTimeout(() => persistEntry(topic.parent_topic_id!, parentEntry), 0);
+                }
+              }
+            } else {
+              // Main topic → unlock its subtopics
+              const subtopics = seedTopics.filter((t) => t.parent_topic_id === topicId);
+              subtopics.forEach((st) => unlock(st.id));
+            }
+          }
+        } else if (newStatus !== "mastered") {
+          // Even without mastery, update parent score as average of children
+          const topic = seedTopics.find((t) => t.id === topicId);
+          if (topic?.parent_topic_id) {
+            const parentChildren = seedTopics.filter(
+              (t) => t.parent_topic_id === topic.parent_topic_id
+            );
+            const avgScore = Math.round(
+              parentChildren.reduce((sum, c) => {
+                const p = next.get(c.id);
+                return sum + (p ? p.score : 0);
+              }, 0) / parentChildren.length
+            );
+            const parentCurrent = next.get(topic.parent_topic_id) || {
+              status: "unlocked" as TopicStatus,
+              score: 0,
+            };
+            if (parentCurrent.status !== "mastered") {
+              const parentStatus: TopicStatus =
+                parentCurrent.status === "locked" ? "unlocked" : parentCurrent.status;
+              const parentEntry = { status: parentStatus, score: avgScore };
+              next.set(topic.parent_topic_id, parentEntry);
+              setTimeout(() => persistEntry(topic.parent_topic_id!, parentEntry), 0);
+            }
+          }
+        }
+
+        return next;
+      });
+    },
+    [persistEntry]
+  );
+
+  const recordExercise = useCallback((topicId: string, correct: boolean, difficulty: number = 1) => {
     setExerciseStatsMap((prev) => {
       const next = new Map(prev);
-      const current = next.get(topicId) || { attempted: 0, correct: 0 };
-      const updated = {
+      const current = next.get(topicId) || { ...EMPTY_STATS };
+
+      // Update difficulty bucket
+      const byDifficulty = { ...current.byDifficulty };
+      const bucket = byDifficulty[difficulty] || { attempted: 0, correct: 0 };
+      byDifficulty[difficulty] = {
+        attempted: bucket.attempted + 1,
+        correct: bucket.correct + (correct ? 1 : 0),
+      };
+
+      // Update streaks
+      const newStreak = correct ? current.currentStreak + 1 : 0;
+      const bestStreak = Math.max(current.bestStreak, newStreak);
+
+      const updated: ExerciseStats = {
         attempted: current.attempted + 1,
         correct: current.correct + (correct ? 1 : 0),
+        byDifficulty,
+        currentStreak: newStreak,
+        bestStreak,
       };
       next.set(topicId, updated);
       setTimeout(() => persistExerciseStats(next), 0);
+
+      // Trigger mastery recalculation after stats update
+      setTimeout(() => recalculateMastery(topicId, updated), 0);
+
       return next;
     });
-  }, [persistExerciseStats]);
+  }, [persistExerciseStats, recalculateMastery]);
 
   const getAllExerciseStats = useCallback(() => {
     return new Map(exerciseStatsMap);
@@ -300,6 +545,7 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
         getExerciseStats,
         recordExercise,
         getAllExerciseStats,
+        masteryConfig: MASTERY_CONFIG,
       }}
     >
       {children}

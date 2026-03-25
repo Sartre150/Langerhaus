@@ -53,7 +53,7 @@ export default function ArenaPage() {
   const params = useParams();
   const router = useRouter();
   const topicId = params.topic_id as string;
-  const { getTopicProgress, addScore, getExerciseStats, recordExercise } = useProgress();
+  const { getTopicProgress, getExerciseStats, recordExercise, masteryConfig } = useProgress();
   const { recordDailyProblem, recordReview, initReviewCard } = useStudy();
 
   // ── Page mode: config (select topics/difficulty) vs practice ──
@@ -163,16 +163,19 @@ export default function ArenaPage() {
     if (!currentProblem || !answer.trim()) return;
 
     const isCorrect = checkAnswer(answer, currentProblem.correct_answer_latex);
+    const problemDifficulty = currentProblem.difficulty || 1;
 
     if (isCorrect) {
       setState("correct");
-      const points = Math.max(20 - hintsUsed * 5 - (attempts * 3), 5);
-      addScore(currentProblem.topic_id, points);
-      setScore((prev) => Math.min(prev + points, 100));
-      recordExercise(currentProblem.topic_id, true);
+      recordExercise(currentProblem.topic_id, true, problemDifficulty);
       recordDailyProblem(currentProblem.topic_id, true);
       recordReview(currentProblem.topic_id, attempts === 0 ? 5 : 3);
       setSessionStats((prev) => ({ attempted: prev.attempted + 1, correct: prev.correct + 1 }));
+      // Score will be updated reactively from getTopicProgress after state change
+      setTimeout(() => {
+        const newProgress = getTopicProgress(currentProblem.topic_id);
+        setScore(newProgress.score);
+      }, 50);
     } else {
       setAttempts((prev) => prev + 1);
       setState("wrong");
@@ -180,7 +183,7 @@ export default function ArenaPage() {
       setTimeout(() => setShake(false), 500);
       setTimeout(() => setState("solving"), 3000);
     }
-  }, [answer, currentProblem, hintsUsed, attempts, addScore, recordExercise, recordDailyProblem, recordReview]);
+  }, [answer, currentProblem, attempts, recordExercise, recordDailyProblem, recordReview, getTopicProgress]);
 
   // ── Next problem ──
   const nextProblem = useCallback(() => {
@@ -204,7 +207,8 @@ export default function ArenaPage() {
     setState("surrendered");
     setShowSolution(true);
     const pid = currentProblem?.topic_id || topicId;
-    recordExercise(pid, false);
+    const problemDifficulty = currentProblem?.difficulty || 1;
+    recordExercise(pid, false, problemDifficulty);
     recordDailyProblem(pid, false);
     recordReview(pid, 1);
     setSessionStats((prev) => ({ ...prev, attempted: prev.attempted + 1 }));

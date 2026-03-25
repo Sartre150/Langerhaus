@@ -23,10 +23,43 @@ export interface Problem {
   calculator_policy?: CalculatorPolicy;
 }
 
-export interface ExerciseStats {
+export interface DifficultyBucket {
   attempted: number;
   correct: number;
 }
+
+export interface ExerciseStats {
+  attempted: number;
+  correct: number;
+  /** Breakdown by difficulty level (1-5) */
+  byDifficulty: Record<number, DifficultyBucket>;
+  /** Current consecutive-correct streak */
+  currentStreak: number;
+  /** Best consecutive-correct streak ever */
+  bestStreak: number;
+}
+
+// ── Mastery Calculation Constants ──
+// Based on Bloom's Mastery Learning & Knowledge Space Theory
+export const MASTERY_CONFIG = {
+  /** Minimum exercises needed before mastery is possible */
+  MIN_EXERCISES: 15,
+  /** Minimum accuracy ratio (0-1) required for mastery */
+  MIN_ACCURACY: 0.80,
+  /** Minimum number of problems solved at difficulty ≥ 3 */
+  MIN_HARD_PROBLEMS: 3,
+  /** Minimum difficulty level that counts as "hard" */
+  HARD_DIFFICULTY_THRESHOLD: 3,
+  /** Weight of each component in the composite score (must sum to 100) */
+  WEIGHTS: {
+    ACCURACY: 35,     // Correctness ratio
+    VOLUME: 20,       // Enough practice to be statistically meaningful
+    DIFFICULTY: 35,   // Proving competence at higher cognitive levels
+    CONSISTENCY: 10,  // Stable knowledge via consecutive correct streaks
+  },
+  /** Streak length that yields full consistency credit */
+  STREAK_FOR_FULL_CREDIT: 5,
+} as const;
 
 // ── Spaced Repetition (SM-2 inspired) ──
 
