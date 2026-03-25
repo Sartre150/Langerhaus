@@ -64,7 +64,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${nunito.variable} ${geistMono.variable} antialiased bg-bg-primary text-text-primary font-sans pt-safe pb-safe`}
+        className={`${nunito.variable} ${geistMono.variable} antialiased bg-bg-primary text-text-primary font-sans pb-safe`}
       >
         <ThemeProvider>
           <AuthProvider>

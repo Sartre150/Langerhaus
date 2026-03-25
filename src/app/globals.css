@@ -257,23 +257,11 @@ body {
   }
 }
 
-/* ── Dynamic Island / Notch: background fill strip ── */
-body::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: env(safe-area-inset-top, 0px);
-  background: var(--bg-primary);
-  z-index: 9999;
-  pointer-events: none;
-}
-
-/* Sticky headers must sit below the Dynamic Island */
+/* ── Dynamic Island / Notch: headers extend behind status bar ── */
 .sticky-header {
   position: sticky;
-  top: env(safe-area-inset-top, 0px);
+  top: 0;
+  padding-top: env(safe-area-inset-top, 0px);
 }
 
 /* Touch devices: hide custom scrollbar (use native) */
