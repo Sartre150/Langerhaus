@@ -1,4 +1,4 @@
-const CACHE_NAME = "langerhaus-v1";
+const CACHE_NAME = "langerhaus-v2";
 const STATIC_ASSETS = [
   "/",
   "/dashboard",
@@ -38,7 +38,7 @@ self.addEventListener("fetch", (event) => {
           caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
           return response;
         })
-        .catch(() => caches.match(request).then((cached) => cached || caches.match("/")))
+        .catch(() => caches.match(request).then((cached) => cached || caches.match("/")).then((r) => r || new Response("Offline", { status: 503, headers: { "Content-Type": "text/plain" } })))
     );
     return;
   }
@@ -64,6 +64,6 @@ self.addEventListener("fetch", (event) => {
 
   // Network-first for everything else (API, Supabase)
   event.respondWith(
-    fetch(request).catch(() => caches.match(request))
+    fetch(request).catch(() => caches.match(request).then((r) => r || new Response("Offline", { status: 503, headers: { "Content-Type": "text/plain" } })))
   );
 });

@@ -47,6 +47,10 @@ function sm2Update(
 
   const nextDate = new Date();
   nextDate.setDate(nextDate.getDate() + interval);
+  // Guard against NaN/Invalid Date from corrupted interval
+  const nextISO = isNaN(nextDate.getTime())
+    ? todayISO()
+    : nextDate.toISOString().slice(0, 10);
 
   return {
     ...card,
@@ -54,7 +58,7 @@ function sm2Update(
     interval,
     repetitions,
     lastReview: now,
-    nextReview: nextDate.toISOString().slice(0, 10),
+    nextReview: nextISO,
   };
 }
 
@@ -119,7 +123,17 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     try {
       const cardsRaw = localStorage.getItem(storageKey("review-cards"));
-      if (cardsRaw) setReviewCards(JSON.parse(cardsRaw));
+      if (cardsRaw) {
+        const parsed = JSON.parse(cardsRaw) as ReviewCard[];
+        // Filter out corrupted cards with invalid dates or NaN fields
+        setReviewCards(parsed.filter((c) =>
+          c.topicId &&
+          typeof c.nextReview === "string" && /^\d{4}-\d{2}-\d{2}$/.test(c.nextReview) &&
+          typeof c.lastReview === "string" && /^\d{4}-\d{2}-\d{2}$/.test(c.lastReview) &&
+          typeof c.interval === "number" && isFinite(c.interval) &&
+          typeof c.easeFactor === "number" && isFinite(c.easeFactor)
+        ));
+      }
 
       const streakRaw = localStorage.getItem(storageKey("streak"));
       if (streakRaw) {
