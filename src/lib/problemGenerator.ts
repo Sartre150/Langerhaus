@@ -228,7 +228,7 @@ const genRatios: Gen = (d) => {
   const c = ri(2, 15 * d);
   const ans = +((a * c) / b).toFixed(2);
   return prob(tid, d,
-    `Si $${a}$ corresponde a $${b}$, ¿cuánto corresponde a $${c}$?$ (regla de tres directa)`,
+    `Si $${a}$ corresponde a $${b}$, ¿cuánto corresponde a $${c}$? (regla de tres directa)`,
     `${ans}`,
     `Usa la regla de tres: $\\frac{${a}}{${b}} = \\frac{x}{${c}}$`,
     `Despeja: $x = \\frac{${a} \\times ${c}}{${b}}$`,

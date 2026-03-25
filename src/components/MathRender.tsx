@@ -92,7 +92,7 @@ function renderMixedContent(text: string, isBlock: boolean) {
           );
         }
         try {
-          parts.push(<InlineMath key={key++} math={restoreMath(inlineMatch[1])} />);
+          parts.push(<InlineMath key={key++} math={restoreMath(inlineMatch[1])} renderError={(error: Error) => <span className="text-red-400 text-xs" title={error.message}>{restoreText(inlineMatch![0])}</span>} />);
         } catch {
           parts.push(<span key={key++} className="text-red-400">{restoreText(inlineMatch[0])}</span>);
         }
@@ -107,7 +107,7 @@ function renderMixedContent(text: string, isBlock: boolean) {
           );
         }
         try {
-          parts.push(<BlockMath key={key++} math={restoreMath(displayMatch[1])} />);
+          parts.push(<BlockMath key={key++} math={restoreMath(displayMatch[1])} renderError={(error: Error) => <span className="text-red-400 text-xs" title={error.message}>{restoreText(displayMatch![0])}</span>} />);
         } catch {
           parts.push(<span key={key++} className="text-red-400">{restoreText(displayMatch[0])}</span>);
         }

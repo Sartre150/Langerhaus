@@ -15,6 +15,7 @@ function todayISO(): string {
 
 function daysBetween(a: string, b: string): number {
   const da = new Date(a), db = new Date(b);
+  if (isNaN(da.getTime()) || isNaN(db.getTime())) return 999;
   return Math.round((db.getTime() - da.getTime()) / 86400000);
 }
 
@@ -139,7 +140,11 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
       }
 
       const logRaw = localStorage.getItem(storageKey("activity-log"));
-      if (logRaw) setActivityLog(JSON.parse(logRaw));
+      if (logRaw) {
+        const parsed = JSON.parse(logRaw) as DailyActivity[];
+        // Filter out entries with invalid dates
+        setActivityLog(parsed.filter((a) => a.date && /^\d{4}-\d{2}-\d{2}$/.test(a.date)));
+      }
     } catch { /* ignore corrupt storage */ }
   }, [storageKey]);
 
@@ -153,10 +158,14 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
   }, [storageKey]);
 
   const persistLog = useCallback((log: DailyActivity[]) => {
-    // Keep last 90 days
+    // Keep last 90 days, ignore entries with invalid dates
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - 90);
-    const trimmed = log.filter((a) => new Date(a.date) >= cutoff);
+    const trimmed = log.filter((a) => {
+      if (!a.date || !/^\d{4}-\d{2}-\d{2}$/.test(a.date)) return false;
+      const d = new Date(a.date);
+      return !isNaN(d.getTime()) && d >= cutoff;
+    });
     try { localStorage.setItem(storageKey("activity-log"), JSON.stringify(trimmed)); } catch {}
   }, [storageKey]);
 
@@ -272,7 +281,9 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - days);
     const cutoffISO = cutoff.toISOString().slice(0, 10);
-    return activityLog.filter((a) => a.date >= cutoffISO).sort((a, b) => a.date.localeCompare(b.date));
+    return activityLog
+      .filter((a) => a.date && /^\d{4}-\d{2}-\d{2}$/.test(a.date) && a.date >= cutoffISO)
+      .sort((a, b) => a.date.localeCompare(b.date));
   }, [activityLog]);
 
   // ══════════════════════════════════════════════════════════════
