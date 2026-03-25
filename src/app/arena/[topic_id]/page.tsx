@@ -242,7 +242,7 @@ export default function ArenaPage() {
   if (pageMode === "config") {
     return (
       <div className="min-h-screen bg-bg-primary bg-grid">
-        <header className="sticky top-0 z-40 bg-bg-primary/80 backdrop-blur-md border-b border-text-muted/10">
+        <header className="sticky-header z-40 bg-bg-primary/80 backdrop-blur-md border-b border-text-muted/10">
           <div className="max-w-2xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center gap-2 sm:gap-3">
             <button
               onClick={() => router.push("/dashboard")}
@@ -478,7 +478,7 @@ export default function ArenaPage() {
   return (
     <div className="min-h-screen bg-bg-primary bg-grid">
       {/* Top Bar */}
-      <header className="sticky top-0 z-40 bg-bg-primary/80 backdrop-blur-md border-b border-text-muted/10">
+      <header className="sticky-header z-40 bg-bg-primary/80 backdrop-blur-md border-b border-text-muted/10">
         <div className="max-w-3xl mx-auto px-3 sm:px-4 py-2 sm:py-3">
           <div className="flex items-center justify-between mb-1.5 sm:mb-2">
             <div className="flex items-center gap-2 sm:gap-3">

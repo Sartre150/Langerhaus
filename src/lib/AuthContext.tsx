@@ -4,6 +4,20 @@ import { createContext, useContext, useEffect, useState, useCallback } from "rea
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
 
+// ── Translate Supabase auth errors to user-friendly Spanish ──
+function translateAuthError(message: string, status?: number): string {
+  if (status === 429) return "Demasiados intentos. Espera unos minutos antes de intentar de nuevo.";
+  const lower = message.toLowerCase();
+  if (lower.includes("invalid login credentials")) return "Email o contraseña incorrectos.";
+  if (lower.includes("email not confirmed")) return "Confirma tu correo electrónico antes de iniciar sesión.";
+  if (lower.includes("user already registered")) return "Ya existe una cuenta con este correo.";
+  if (lower.includes("password") && lower.includes("at least")) return "La contraseña debe tener al menos 6 caracteres.";
+  if (lower.includes("rate limit") || lower.includes("too many requests")) return "Demasiados intentos. Espera unos minutos.";
+  if (lower.includes("email") && lower.includes("invalid")) return "Ingresa un correo electrónico válido.";
+  if (lower.includes("signup is disabled")) return "El registro está deshabilitado temporalmente.";
+  return message;
+}
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
@@ -30,9 +44,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+    // Get initial session — if the refresh token is stale/invalid, clear it
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        // Invalid refresh token → sign out to clear corrupted session
+        console.warn("[Auth] Stale session cleared:", error.message);
+        supabase.auth.signOut();
+        setSession(null);
+        setUser(null);
+      } else {
+        setSession(session);
+        setUser(session?.user ?? null);
+      }
       setLoading(false);
     });
 
@@ -53,13 +76,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         data: { full_name: name },
       },
     });
-    if (error) return { error: error.message };
+    if (error) return { error: translateAuthError(error.message, error.status) };
     return { error: null };
   }, []);
 
   const signIn = useCallback(async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) return { error: error.message };
+    if (error) return { error: translateAuthError(error.message, error.status) };
     return { error: null };
   }, []);
 

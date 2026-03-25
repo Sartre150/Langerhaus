@@ -84,7 +84,7 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-bg-primary bg-grid">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-bg-primary/90 backdrop-blur-md border-b border-text-muted/8">
+      <header className="sticky-header z-40 bg-bg-primary/90 backdrop-blur-md border-b border-text-muted/8">
         <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-neon-cyan/15 flex items-center justify-center">
@@ -441,6 +441,8 @@ export default function DashboardPage() {
                     resetStudyData();
                     setShowResetConfirm(false);
                     setResetConfirmText("");
+                    // Force full page reload to guarantee all cached state is gone
+                    setTimeout(() => window.location.reload(), 150);
                   }}
                 >
                   Borrar Todo

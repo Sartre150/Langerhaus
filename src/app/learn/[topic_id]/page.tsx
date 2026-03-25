@@ -83,7 +83,7 @@ export default function LearnPage() {
   return (
     <div className="min-h-screen bg-bg-primary">
       {/* Header */}
-      <header className="sticky top-0 z-50 border-b border-text-muted/20 bg-bg-primary/90 backdrop-blur-md">
+      <header className="sticky-header z-50 border-b border-text-muted/20 bg-bg-primary/90 backdrop-blur-md">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button onClick={() => router.push("/dashboard")} className="text-text-muted hover:text-text-primary transition">

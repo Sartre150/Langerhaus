@@ -134,7 +134,7 @@ export default function TopicModal({ topic, isOpen, onClose }: TopicModalProps) 
               <BarChart3 size={14} className="text-neon-cyan" />
               <span className="text-xs font-semibold text-text-primary uppercase tracking-wider">Ejercicios Resueltos</span>
             </div>
-            <div className="grid grid-cols-3 gap-3 text-center mb-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center mb-3">
               <div>
                 <p className="text-lg font-bold text-text-primary font-mono">{totalStats.attempted}</p>
                 <p className="text-xs text-text-muted">Intentados</p>
@@ -142,6 +142,10 @@ export default function TopicModal({ topic, isOpen, onClose }: TopicModalProps) 
               <div>
                 <p className="text-lg font-bold text-neon-green font-mono">{totalStats.correct}</p>
                 <p className="text-xs text-text-muted">Correctos</p>
+              </div>
+              <div>
+                <p className="text-lg font-bold text-red-400 font-mono">{totalStats.attempted - totalStats.correct}</p>
+                <p className="text-xs text-text-muted">Incorrectos</p>
               </div>
               <div>
                 <p className="text-lg font-bold text-neon-cyan font-mono">
